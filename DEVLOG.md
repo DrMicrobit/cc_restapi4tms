@@ -38,3 +38,10 @@ Unhappy:
   repository
   Decision: KISS atm, to repository for MVP
 
+
+
+Service:
+========
+Nothing wild, just the business layer.
+TODO: get error handling clean of HTTP, Claude goofed there.
+
