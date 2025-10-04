@@ -19,6 +19,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
+
+// TODO: whitelabel error page for http://localhost:8080/
+// TODO: test posting
+
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
