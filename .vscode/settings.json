@@ -1,0 +1,40 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.format.settings.url": "eclipse-formatter.xml",
+    "[java]": {
+        "editor.detectIndentation": false,
+        "editor.defaultFormatter": "redhat.java",
+        "editor.formatOnPaste": true,
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file",
+    },
+    "java.compile.nullAnalysis.mode": "automatic"
+    //
+    //
+    // Application scope only settings. Sonarlint ... why? :-(
+    // Make sure to add this to the default VSCode profile as settings
+    //  File: ~/.config/Code/User/settings.json
+    //
+    //
+    "sonarlint.rules": {
+        "java:S106": { // Replace this use of System.out by a logger. This block of commented-out lines of code should be removed.
+            "level": "off",
+        },
+        "java:S125": { // This block of commented-out lines of code should be removed.
+            "level": "off",
+        },
+        "python:S125": { // This block of commented-out lines of code should be removed.
+            "level": "off",
+        },
+        "xml:S125": { // This block of commented-out lines of code should be removed.
+            "level": "off",
+        },
+        "java:S1116": { // "Remove this empty statement." Nope: private constructor() {};
+            "level": "off",
+        },
+        "python:S3626": { // "Remove this redundant return." Nope, stays. Code clarity.
+            "level": "off",
+        }
+    },
+    "sonarlint.focusOnNewCode": false
+}
