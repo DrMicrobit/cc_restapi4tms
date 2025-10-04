@@ -1,0 +1,40 @@
+Entity:
+=======
+In model/Task.java
+
+- class or record?
+  - Does record mix with all the annotations jakarta annotations?
+  - And then the records would be immutable ... do we want that? Not really, no. Not for
+    in memory storage.
+  - Decision: class atm. Boilerplate via IDE.
+
+Fields:
+- id:
+  - is a UUID. Then: random or not? If not: privacy considerations.
+  - decision 1: don't care atm, random().
+  - decision 2: must be provided by business value to class, no default value
+  - UUID contraints???
+- status
+  - should naturally be an enum internally
+  - but input via REST ... and text anyway
+  - decision: KISS at first, i.e., strings. And opportunity to test jakarta validator.
+- timestamps
+  - store as ZonedDateTime instead of string to allow future sorting operations
+  - decision: stored completely (no truncation to seconds) (again, business logic!)
+Questions:
+
+
+Repository:
+===========
+Realise via interface to provide future flexibility. Doesn't cost much effort, so eh.
+
+Fields:
+- "Database"
+  - ConcurrentHashMap. HashMap "because default", and Concurrent because REST, Spring.
+    It's there, why not use it.
+
+Unhappy:
+- localisation of existsByTitleAndAuthor(). Feels like BL, but simplicity for MVP to
+  repository
+  Decision: KISS atm, to repository for MVP
+
