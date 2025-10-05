@@ -2,6 +2,8 @@ package com.example.task_management_api.model;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -37,6 +39,7 @@ public class Task {
     }
 
     // Convenience constructor, timestamps auto
+    // xTODO: check: is java compiler smart enough to re-use the LocalDateTime call?
     public Task(@NotBlank UUID id, @NotBlank(message = "Title is required") String title,
             @NotBlank(message = "Author is required") String author,
             @NotBlank(message = "Project is required") String project,
@@ -44,8 +47,9 @@ public class Task {
                     regexp = "^(pending|in-progress|completed)$",
                     message = "Status must be 'pending', 'in-progress', or 'completed'.") String status,
             String description) {
-        this(id, title, author, project, status, description, ZonedDateTime.now(),
-                ZonedDateTime.now());
+        this(id, title, author, project, status, description,
+                LocalDateTime.now().atZone(ZoneId.systemDefault()).withZoneSameInstant(utcZoneId),
+                LocalDateTime.now().atZone(ZoneId.systemDefault()).withZoneSameInstant(utcZoneId));
     }
 
 
@@ -123,6 +127,8 @@ public class Task {
     // ------------------------------------------------------------------------
     // Private section from here on
     // ------------------------------------------------------------------------
+
+    private static ZoneId utcZoneId = ZoneId.of("UTC");
 
     // xTODO BaCh: decide on null vs ""
 
