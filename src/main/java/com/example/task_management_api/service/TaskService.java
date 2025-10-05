@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,11 +22,6 @@ public class TaskService {
     private final TaskRepository taskRepository;
 
 
-    // VSCode says: Unnecessary `@Autowired`
-    // annotationvscode-spring-boot(JAVA_AUTOWIRED_CONSTRUCTOR)
-    // xTODO BaCh: read up above
-
-    @Autowired
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }

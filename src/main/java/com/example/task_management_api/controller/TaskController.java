@@ -3,7 +3,6 @@ package com.example.task_management_api.controller;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,11 +28,6 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    // VSCode says: Unnecessary `@Autowired`
-    // annotationvscode-spring-boot(JAVA_AUTOWIRED_CONSTRUCTOR)
-    // xTODO BaCh: read up above
-
-    @Autowired
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
