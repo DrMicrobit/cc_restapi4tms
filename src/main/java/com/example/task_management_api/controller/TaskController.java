@@ -91,6 +91,13 @@ public class TaskController {
         return ResponseEntity.ok(Map.of("empty", empty));
     }
 
+    @GetMapping("/populate")
+    public ResponseEntity<Map<String, Boolean>> populate() {
+        taskService.createPredefinedTasks();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("populated", true));
+    }
+
     public record TaskCreateRequest(
             @NotBlank(message = "Title is required") String title,
             @NotBlank(message = "Author is required") String author,

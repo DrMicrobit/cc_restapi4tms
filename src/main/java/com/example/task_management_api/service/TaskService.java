@@ -90,20 +90,6 @@ public class TaskService {
         return taskRepository.isEmpty();
     }
 
-    // ------------------------------------------------------------------------
-    // Private section from here on
-    // ------------------------------------------------------------------------
-
-    /**
-     * As not using enum, this set of strings to bundle all valid status
-     */
-    // xTODO: is there no "simpler" way to declare a StringSet at compile time?
-    private final Set<String> validStatus = Collections.unmodifiableSet(
-            new HashSet<>(Set.of("pending", "in-progress", "completed")));
-
-    boolean isValidStatus(String status) {
-        return status != null && validStatus.contains(status);
-    }
 
 
     /**
@@ -111,7 +97,7 @@ public class TaskService {
      *
      * Careful: Barebone task creation, not going through validator.
      */
-    private void createPredefinedTasks() {
+    public void createPredefinedTasks() {
         UUID taskId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         ZonedDateTime tCreated = ZonedDateTime.parse("2025-09-29T13:23:16Z");
         ZonedDateTime tUpdated = ZonedDateTime.parse("2025-09-29T13:23:16Z");
@@ -141,8 +127,34 @@ public class TaskService {
                 tUpdated);
         taskRepository.create(task);
 
+        taskRepository.create(new Task(
+                UUID.randomUUID(),
+                "Testing programs right",
+                // "A. Nonymous",
+                null,
+                "RESTful API",
+                "in-progress",
+                "What can I say ...?"));
+
         // xTODO: don't like println, read up on how to log with spring
         System.out.println("Initialised " + taskRepository.count() + " predefined tasks.");
+    }
+
+
+
+    // ------------------------------------------------------------------------
+    // Private section from here on
+    // ------------------------------------------------------------------------
+
+    /**
+     * As not using enum, this set of strings to bundle all valid status
+     */
+    // xTODO: is there no "simpler" way to declare a StringSet at compile time?
+    private final Set<String> validStatus = Collections.unmodifiableSet(
+            new HashSet<>(Set.of("pending", "in-progress", "completed"))); // NOSONAR
+
+    boolean isValidStatus(String status) {
+        return status != null && validStatus.contains(status);
     }
 
 
