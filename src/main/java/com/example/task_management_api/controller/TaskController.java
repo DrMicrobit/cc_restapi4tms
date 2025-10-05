@@ -32,13 +32,14 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    // TODO: check "illegal" status strings
-    // TODO: lowercase status?
     @GetMapping
     public ResponseEntity<List<Task>> getAllTasks(
-            @RequestParam(required = false) String status) {
+            @RequestParam(name = "status", required = false) String status) {
         List<Task> tasks;
-        if (status != null && !status.trim().isEmpty()) {
+        if (status != null) {
+            status = status.trim().toLowerCase();
+        }
+        if (status != null && !status.isEmpty()) {
             tasks = taskService.getTasksByStatus(status);
         } else {
             tasks = taskService.getAllTasks();
