@@ -7,26 +7,96 @@
 </head>
 
 <body>
+    <script>
+        /**
+         * Reusable function to POST JSON to a given URL
+         * @param {string} url - The endpoint URL
+         * @param {string} method - HTTP method (e.g., 'POST', 'PUT')
+         * @param {Object} data - JavaScript object to send as JSON
+         */
+        function postJson(url, method, data) {
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    const status = response.status;
+                    const statusText = response.statusText;
+
+                    if (!response.ok) {
+                        // Get the error response as text/HTML and display it
+                        return response.text().then(html => {
+                            document.open();
+                            document.write(`<h2>Response: ${status} ${statusText}</h2>`);
+                            document.write(html);
+                            document.close();
+                            throw new Error('Request failed'); // Stop the chain
+                        });
+                    }
+
+                    // Check Content-Type to determine how to handle the response
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json().then(data => ({ data, status, statusText, isJson: true }));
+                    } else {
+                        // Handle as HTML/text
+                        return response.text().then(data => ({ data, status, statusText, isJson: false }));
+                    }
+                })
+                .then(result => {
+                    document.open();
+                    document.write(`<h2>Response: ${result.status} ${result.statusText}</h2>`);
+
+                    if (result.isJson) {
+                        // It's JSON
+                        document.write('<pre>' + JSON.stringify(result.data, null, 2) + '</pre>');
+                    } else {
+                        // It's HTML/text
+                        document.write(result.data);
+                    }
+                    document.close();
+                })
+                .catch(error => {
+                    // This catches network errors, not HTTP errors (those are handled above)
+                    console.error('Network error:', error);
+                });
+        }
+    </script>
     <h1>Welcome to Task Management API</h1>
     <p>Minimal documentation. Ideally generated automatically, but static index.html atm.</p>
+    <p>Links will execute the endpoints.</p>
     <p>Available endpoints:</p>
     <ul>
         <li><a href="/tasks">GET /tasks</a> – List all tasks
             <br />E.g: <code>curl http://localhost:8080/tasks</code>
         </li>
-        <li>GET /tasks?status=pending|in-progress|completed – Get a task by status
+        <li><a href="/tasks?status=pending">GET /tasks?status=pending|in-progress|completed</a>
+            – Get a task by status
             <br />E.g: <code>curl http://localhost:8080/tasks/status=pending</code>
         </li>
-        <li>GET /tasks/{id} – Get a task by ID. Returns HTTP 404 if task does not exist.
+        <li><a href="/tasks/123e4567-e89b-12d3-a456-426614174000">GET /tasks/{id}</a>
+            – Get a task by ID. Returns HTTP
+            404 if task does not exist.
             <br />E.g: <code>curl http://localhost:8080/tasks/123e4567-e89b-12d3-a456-426614174000</code>
         </li>
-        <li>GET /tasks/count – Get a number of tasks in repository.
+        <li><a href="/tasks/count">GET /tasks/count</a>
+            – Get a number of tasks in repository.
             <br />E.g: <code>curl http://localhost:8080/tasks/count</code>
         </li>
-        <li>GET /tasks/isempty – Whether tasks are in repository.
+        <li><a href="/tasks/isempty">GET /tasks/isempty</a>
+            – Whether tasks are in repository.
             <br />E.g: <code>curl http://localhost:8080/tasks/isempty</code>
         </li>
-        <li>POST /tasks – Create a task.
+        <li><a href="/tasks/populate">GET /tasks/populate</a>
+            – Add two predefined tasks to repository (if not already present)
+            <br />E.g: <code>curl http://localhost:8080/tasks/populate</code>
+        </li>
+        <li>
+            <a href="/"
+                onclick="postJson('/tasks', 'POST', {title:'Read manual for \'posting\' on how to save queries etc.', author: 'BaCh', project: 'Learning', status:'pending', description: 'Might be more efficient than constantly curl in development.'}); return false;">
+                POST /tasks
+            </a> – Create a task. (the POST link here creates a new entry if not present)
             <br /> Post as JSON format.
             <br /> Mandatory, non-empty fields: title, author, project, status.
             <br /> Optional field: description.
@@ -36,15 +106,19 @@
                 <br/>  "title": "Read manual for 'posting' on how to save queries etc.",
                 <br/>  "author": "BaCh",
                 <br/>  "project": "Learning",
-                <br/>  "description": "Might be more efficient than constantly curl in development.",
                 <br/>  "status": "pending"
+                <br/>  "description": "Might be more efficient than constantly curl in development.",
                 <br/>}'
 </code>
         </li>
-        <li>DELETE /tasks/{id} – Delete a task by ID. Always returns HTTP 204, even if task did not exist.
+        <li> <a href="#" onclick="postJson('/tasks/550e8400-e29b-41d4-a716-446655440000', 'DELETE',{}); return false;">
+                POST /tasks
+                DELETE /tasks/{id} </a>– Delete a task by ID. (the link here deletes one of the predefined tasks)
+            <br /> Always returns HTTP 204, even if task did not exist.
             <br />E.g: <code>curl -v -X DELETE http://localhost:8080/tasks/550e8400-e29b-41d4-a716-446655440000</code>
         </li>
-        <li>DELETE /tasks – Delete all tasks. Always returns HTTP 204, even if no tasks was present.
+        <li> <a href="#" onclick="postJson('/tasks', 'DELETE',{}); return false;">
+                DELETE /tasks</a> – Delete all tasks. Always returns HTTP 204, even if no tasks was present.
             <br />E.g: <code>curl -v -X DELETE http://localhost:8080/tasks</code>
         </li>
     </ul>
