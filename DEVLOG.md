@@ -7,6 +7,9 @@ In model/Task.java
   - And then the records would be immutable ... do we want that? Not really, no. Not for
     in memory storage.
   - Decision: class atm. Boilerplate via IDE.
+  - Rollback: Now record, as I learned about best practices of jakarta annotations going
+    to DTO classes. To be discussed, especially whether frameworks like checkerframework
+    or similar from jakarta / Spring Boot would be used.
 
 Fields:
 - id:
@@ -21,7 +24,8 @@ Fields:
 - timestamps
   - store as ZonedDateTime instead of string to allow future sorting operations
   - decision: stored completely (no truncation to seconds) (again, business logic!)
-Questions:
+
+
 
 
 Repository:
@@ -56,3 +60,4 @@ Jakarta:
 ========
 learned: annotations in Task.java do not enforce validation, only together
 with @Valid and/or @RequestBody (in the controller only?)
+

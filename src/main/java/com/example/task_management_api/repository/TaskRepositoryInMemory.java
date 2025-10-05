@@ -17,7 +17,7 @@ public class TaskRepositoryInMemory implements TaskRepository {
     // Create
     @Override
     public Task create(Task task) {
-        tasks.put(task.getId(), task);
+        tasks.put(task.id(), task);
         return task;
     }
 
@@ -35,7 +35,7 @@ public class TaskRepositoryInMemory implements TaskRepository {
     @Override
     public List<Task> findByStatus(String status) {
         return tasks.values().stream()
-                .filter(task -> status.equals(task.getStatus()))
+                .filter(task -> status.equals(task.status()))
                 .toList();
     }
 
@@ -51,7 +51,7 @@ public class TaskRepositoryInMemory implements TaskRepository {
 
     public boolean existsByTitleAndAuthor(String title, String author) {
         return tasks.values().stream().anyMatch(
-                task -> title.equals(task.getTitle()) && author.equals(task.getAuthor()));
+                task -> title.equals(task.title()) && author.equals(task.author()));
     }
 
 
