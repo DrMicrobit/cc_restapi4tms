@@ -20,7 +20,6 @@ import jakarta.validation.constraints.Pattern;
 
 
 // TODO: whitelabel error page for http://localhost:8080/
-// TODO: test posting
 
 @RestController
 @RequestMapping("/tasks")
@@ -58,78 +57,38 @@ public class TaskController {
     public ResponseEntity<Task> createTask(
             @Valid @RequestBody TaskCreateRequest request) {
         Task createdTask = taskService.createTask(
-                request.getTitle(),
-                request.getAuthor(),
-                request.getProject(),
-                request.getStatus(),
-                request.getDescription());
+                request.title(),
+                request.author(),
+                request.project(),
+                request.status(),
+                request.description());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(createdTask);
     }
 
-    // xTODO BaCh: Claude proposes a class as DTO ... think about record???
 
-    public static class TaskCreateRequest {
-        @NotBlank(message = "Title is required")
-        private String title;
+    public record TaskCreateRequest(
+            @NotBlank(message = "Title is required") String title,
+            @NotBlank(message = "Author is required") String author,
+            @NotBlank(message = "Project is required") String project,
+            @NotBlank(message = "Status is required") @Pattern(
+                    regexp = "^(pending|in-progress|completed)$",
+                    message = "Status must be 'pending', 'in-progress', or 'completed'.") String status,
+            String description) {
 
-        @NotBlank(message = "Author is required")
-        private String author;
 
-        @NotBlank(message = "Project is required")
-        private String project;
-
-        @NotBlank(message = "Status is required")
-        @Pattern(
-                regexp = "^(pending|in-progress|completed)$",
-                message = "Status must be 'pending', 'in-progress', or 'completed'.")
-        String status;
-
-        private String description = "";
-
-        public TaskCreateRequest() {
-            // xTODO BaCh: hide as private and throw?
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public String getAuthor() {
-            return author;
-        }
-
-        public void setAuthor(String author) {
-            this.author = author;
-        }
-
-        public String getProject() {
-            return project;
-        }
-
-        public void setProject(String project) {
-            this.project = project;
-        }
-
-        public String getStatus() {
-            return status;
-        }
-
-        public void setStatus(String status) {
-            this.status = status;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
+        /**
+         * Canonical constructor. Using it to catch empty descriptions at entry point
+         *
+         * If using jackson >=2.9, could go the Jackson annotation route at record declaration level
+         * above: * "@JsonSetter(nulls = Nulls.AS_EMPTY) String description"
+         */
+        public TaskCreateRequest {
+            // normalize null description to empty string
+            if (description == null) {
+                description = "";
+            }
         }
     }
 }

@@ -49,6 +49,13 @@ Service:
 Nothing wild, just the business layer.
 TODO: get error handling clean of HTTP, Claude goofed there.
 
+Controller:
+===========
+- Claude goofed, proposed class instead of record. Record way cleaner.
+- Learned that canonical constructors can be used for front line defense and/or setting
+default values of DTOs.
+
+
 
 Error handling / exceptions:
 ============================
