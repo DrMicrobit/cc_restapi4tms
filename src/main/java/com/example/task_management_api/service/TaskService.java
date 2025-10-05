@@ -16,8 +16,7 @@ import com.example.task_management_api.model.Task;
 
 
 // xTODO: guarantees and docs
-// TODO: Claude inserted HTTP error code exceptions ... nope, that's not separation!
-// Clean this up later
+
 
 @Service
 public class TaskService {
