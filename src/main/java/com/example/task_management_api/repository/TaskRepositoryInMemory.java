@@ -47,6 +47,10 @@ public class TaskRepositoryInMemory implements TaskRepository {
         tasks.clear();
     }
 
+    public void deleteById(UUID id) {
+        tasks.remove(id);
+    }
+
     // Query
 
     public boolean existsByTitleAndAuthor(String title, String author) {

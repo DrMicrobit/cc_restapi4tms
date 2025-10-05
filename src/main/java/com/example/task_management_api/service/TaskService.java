@@ -73,7 +73,13 @@ public class TaskService {
     // nothing atm
 
     // Delete
-    // nothing atm
+    public void deleteAllTasks() {
+        taskRepository.clear();
+    }
+
+    public void deleteTaskById(UUID id) {
+        taskRepository.deleteById(id);;
+    }
 
     // ? Eventually special queries empty and count
 

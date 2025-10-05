@@ -32,7 +32,8 @@ public interface TaskRepository {
 
     // Delete
     void clear();
-    // ? boolean deleteById(UUID id);
+
+    void deleteById(UUID id);
 
 
     // Special query functions
