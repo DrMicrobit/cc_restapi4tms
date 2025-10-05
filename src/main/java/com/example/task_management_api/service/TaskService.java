@@ -81,8 +81,14 @@ public class TaskService {
         taskRepository.deleteById(id);;
     }
 
-    // ? Eventually special queries empty and count
+    // Special queries empty and count
+    public long countTasks() {
+        return taskRepository.count();
+    }
 
+    public boolean isEmpty() {
+        return taskRepository.isEmpty();
+    }
 
     // ------------------------------------------------------------------------
     // Private section from here on

@@ -1,6 +1,7 @@
 package com.example.task_management_api.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -78,6 +79,17 @@ public class TaskController {
                 .body(createdTask);
     }
 
+    @GetMapping("/count")
+    public ResponseEntity<Map<String, Long>> getTaskCount() {
+        long count = taskService.countTasks();
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    @GetMapping("/isempty")
+    public ResponseEntity<Map<String, Boolean>> getIsEmpty() {
+        boolean empty = taskService.isEmpty();
+        return ResponseEntity.ok(Map.of("empty", empty));
+    }
 
     public record TaskCreateRequest(
             @NotBlank(message = "Title is required") String title,

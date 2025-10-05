@@ -68,3 +68,8 @@ Jakarta:
 learned: annotations in Task.java do not enforce validation, only together
 with @Valid and/or @RequestBody (in the controller only?)
 
+Additional endpoints:
+=====================
+Just because I now can :-)
+DELETE: /tasks and /tasks/{id}
+GET: /tasks/count and /tasks/isempty

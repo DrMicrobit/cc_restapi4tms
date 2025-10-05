@@ -14,6 +14,8 @@
         <li><a href="/tasks">GET /tasks</a> – List all tasks</li>
         <li>GET /tasks?status=pending|in-progress|completed – Get a task by status</li>
         <li>GET /tasks/{id} – Get a task by ID</li>
+        <li>GET /tasks/count – Get a number of tasks in repository.</li>
+        <li>GET /tasks/isempty – Whether tasks are in repository.</li>
         <li>POST /tasks – Create a task.
             <br /> Post as JSON format.
             <br /> Mandatory, non-empty fields: title, author, project, status.
