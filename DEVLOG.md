@@ -46,6 +46,12 @@ Nothing wild, just the business layer.
 TODO: get error handling clean of HTTP, Claude goofed there.
 
 
+Error handling / exceptions:
+============================
+In real production code, would have own global error handler with own exception classes.
+Decision: not for this toy project. Influences also: separation of concerns regarding throwing
+HTTP codes.
+
 Jakarta:
 ========
 learned: annotations in Task.java do not enforce validation, only together

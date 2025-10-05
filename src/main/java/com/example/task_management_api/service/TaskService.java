@@ -50,8 +50,7 @@ public class TaskService {
                     "A task with same title and author ('" + title + "', '" + author
                             + "') already exists.");
         }
-        // TODO: own func to make sure UUID is unique
-        var uuid = UUID.randomUUID();
+        var uuid = getNewUuid();
         var task = new Task(uuid, title, author, project, status, description);
         return taskRepository.create(task);
     }
@@ -141,4 +140,35 @@ public class TaskService {
         System.out.println("Initialised " + taskRepository.count() + " predefined tasks.");
     }
 
+
+    /**
+     * Creates a new UUID suitable for inserting a new task into repository.
+     *
+     * @apiNote Caution: not production level ready. Tries up to 1000 UUIDs, if all already present,
+     *          throws.
+     *
+     * @return UUID
+     * @throws IllegalStateException if no proper UUID could be found.
+     */
+    private UUID getNewUuid() {
+        boolean haveUuid = false;
+        UUID newId = UUID.randomUUID();
+        for (int i = 0; i < 1000 && !haveUuid; ++i) {
+            var idInRepository = taskRepository.findById(newId);
+            if (!idInRepository.isPresent()) {
+                haveUuid = true;
+            }
+            newId = UUID.randomUUID();
+        }
+        if (!haveUuid) {
+            // in "real" production code: exception handler for whole project
+            // together with logger, mail, etc. to alert ppl. Would probably have
+            // own exception class.
+            String emsg =
+                    "Tried 1000 times to create a UUID not already present in repository. Failed?";
+            System.err.println(emsg);
+            throw new IllegalStateException(emsg);
+        }
+        return newId;
+    }
 }
