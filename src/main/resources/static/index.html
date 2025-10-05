@@ -8,23 +8,45 @@
 
 <body>
     <h1>Welcome to Task Management API</h1>
-    <p>Minimal documentation. ideally generated automatically, but static index.html atm.</p>
+    <p>Minimal documentation. Ideally generated automatically, but static index.html atm.</p>
     <p>Available endpoints:</p>
     <ul>
-        <li><a href="/tasks">GET /tasks</a> – List all tasks</li>
-        <li>GET /tasks?status=pending|in-progress|completed – Get a task by status</li>
-        <li>GET /tasks/{id} – Get a task by ID</li>
-        <li>GET /tasks/count – Get a number of tasks in repository.</li>
-        <li>GET /tasks/isempty – Whether tasks are in repository.</li>
+        <li><a href="/tasks">GET /tasks</a> – List all tasks
+            <br />E.g: <code>curl http://localhost:8080/tasks</code>
+        </li>
+        <li>GET /tasks?status=pending|in-progress|completed – Get a task by status
+            <br />E.g: <code>curl http://localhost:8080/tasks/status=pending</code>
+        </li>
+        <li>GET /tasks/{id} – Get a task by ID. Returns HTTP 404 if task does not exist.
+            <br />E.g: <code>curl http://localhost:8080/tasks/123e4567-e89b-12d3-a456-426614174000</code>
+        </li>
+        <li>GET /tasks/count – Get a number of tasks in repository.
+            <br />E.g: <code>curl http://localhost:8080/tasks/count</code>
+        </li>
+        <li>GET /tasks/isempty – Whether tasks are in repository.
+            <br />E.g: <code>curl http://localhost:8080/tasks/isempty</code>
+        </li>
         <li>POST /tasks – Create a task.
             <br /> Post as JSON format.
             <br /> Mandatory, non-empty fields: title, author, project, status.
             <br /> Optional field: description.
             <br /> Entries with unsupported status or having same author and title present will be rejected.
             <br /> Returns task created if creation successful, else HTTP 409.
+            <br /><code>curl -X POST http://localhost:8080/tasks -H "Content-Type: application/json" -d '{
+                <br/>  "title": "Read manual for 'posting' on how to save queries etc.",
+                <br/>  "author": "BaCh",
+                <br/>  "project": "Learning",
+                <br/>  "description": "Might be more efficient than constantly curl in development.",
+                <br/>  "status": "pending"
+                <br/>}'
+</code>
         </li>
-        <li>DELETE /tasks/{id} – Delete a task by ID. Always returns HTTP 204, even if task did not exist.</li>
-        <li>DELETE /tasks – Delete all tasks. Always returns HTTP 204, even no tasks was present.</li>
+        <li>DELETE /tasks/{id} – Delete a task by ID. Always returns HTTP 204, even if task did not exist.
+            <br />E.g: <code>curl -v -X DELETE http://localhost:8080/tasks/550e8400-e29b-41d4-a716-446655440000</code>
+        </li>
+        <li>DELETE /tasks – Delete all tasks. Always returns HTTP 204, even if no tasks was present.
+            <br />E.g: <code>curl -v -X DELETE http://localhost:8080/tasks</code>
+        </li>
     </ul>
     <p>Structure of a task:</p>
     <ul>
