@@ -45,3 +45,8 @@ Service:
 Nothing wild, just the business layer.
 TODO: get error handling clean of HTTP, Claude goofed there.
 
+
+Jakarta:
+========
+learned: annotations in Task.java do not enforce validation, only together
+with @Valid and/or @RequestBody (in the controller only?)

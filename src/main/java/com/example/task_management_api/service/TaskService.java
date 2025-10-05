@@ -16,7 +16,6 @@ import com.example.task_management_api.model.Task;
 
 
 // xTODO: guarantees and docs
-// TODO: probably populate with initial entries from here
 // TODO: Claude inserted HTTP error code exceptions ... nope, that's not separation!
 // Clean this up later
 
@@ -92,7 +91,7 @@ public class TaskService {
     // ------------------------------------------------------------------------
 
     /**
-     * As not using enoum, this set of strings to bundle all valid status
+     * As not using enum, this set of strings to bundle all valid status
      */
     // xTODO: is there no "simpler" way to declare a StringSet at compile time?
     private final Set<String> validStatus = Collections.unmodifiableSet(
@@ -103,6 +102,11 @@ public class TaskService {
     }
 
 
+    /**
+     * Add two pre-defined tasks to the repository.
+     *
+     * Careful: Barebone task creation, not going through validator.
+     */
     private void createPredefinedTasks() {
         UUID taskId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         ZonedDateTime tCreated = ZonedDateTime.parse("2025-09-29T13:23:16Z");
@@ -112,8 +116,8 @@ public class TaskService {
                 "Implement User Authentication",
                 "Alice Johnson",
                 "Authentication System", // Missing in Challenge Instructions
-                "Create a secure user authentication system using JWT.",
                 "pending",
+                "Create a secure user authentication system using JWT.",
                 tCreated,
                 tUpdated);
         taskRepository.create(task);
@@ -127,14 +131,14 @@ public class TaskService {
                 "Design Database Scheme",
                 "Bob Smith",
                 "Database Design", // Missing in Challenge Instructions
-                "Draft the database schema for the project",
                 "pending",
+                "Draft the database schema for the project",
                 tCreated,
                 tUpdated);
         taskRepository.create(task);
 
         // xTODO: don't like println, read up on how to log with spring
-        System.out.println("Initialised " + taskRepository.count() + " predfined tasks.");
+        System.out.println("Initialised " + taskRepository.count() + " predefined tasks.");
     }
 
 }
