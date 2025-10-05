@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Task Management API</title>
+</head>
+
+<body>
+    <h1>Welcome to Task Management API</h1>
+    <p>Minimal documentation. ideally generated automatically, but static index.html atm.</p>
+    <p>Available endpoints:</p>
+    <ul>
+        <li><a href="/tasks">GET /tasks</a> – List all tasks</li>
+        <li>GET /tasks?status=pending|in-progress|completed – Get a task by status</li>
+        <li>GET /tasks/{id} – Get a task by ID</li>
+        <li>POST /tasks – Create a task.
+            <br /> Post as JSON format.
+            <br /> Mandatory, non-empty fields: title, author, project, status.
+            <br /> Optional field: description.
+            <br /> Entries with unsupported status or having same author and title present will be rejected.
+            <br /> Returns task created if creation successful, else HTTP 409.
+        </li>
+    </ul>
+    <p>Structure of a task:</p>
+    <ul>
+        <li>Task fields:</li>
+        <li>id (unique identifier)</li>
+        <li>title (string, required)</li>
+        <li>author (string, required)</li>
+        <li>description (string, optional)</li>
+        <li>status (string, required, can be "pending" (default), "in-progress", or "completed")</li>
+        <li>project (string, required)</li>
+        <li>created_at (timestamp)</li>
+        <li>updated_at (timestamp)</li>
+    </ul>
+</body>
+
+</html>
