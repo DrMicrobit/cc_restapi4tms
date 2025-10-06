@@ -1,0 +1,224 @@
+package com.example.task_management_api.controller;
+
+import com.example.task_management_api.model.Task;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+/**
+ * Integration tests for TaskController. Uses @SpringBootTest to load the full application context
+ * with real service layer.
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+class TaskControllerIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        // Register JavaTimeModule to handle ZonedDateTime
+        objectMapper.registerModule(new JavaTimeModule());
+
+        // Clean up before each test
+        mockMvc.perform(delete("/tasks"));
+    }
+
+    @Test
+    void getAllTasks_shouldReturnEmptyListInitially() throws Exception {
+        mockMvc.perform(get("/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void createTask_andRetrieve_shouldWorkEndToEnd() throws Exception {
+        // Create a task
+        String requestBody = """
+                {
+                    "title": "Integration Test Task",
+                    "author": "Test Author",
+                    "project": "Test Project",
+                    "status": "pending",
+                    "description": "Testing full flow"
+                }
+                """;
+
+        String response = mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value("Integration Test Task"))
+                .andExpect(jsonPath("$.author").value("Test Author"))
+                .andExpect(jsonPath("$.status").value("pending"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Extract the ID from response
+        Task createdTask = objectMapper.readValue(response, Task.class);
+
+        // Retrieve all tasks and verify it's there
+        mockMvc.perform(get("/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(createdTask.id().toString()))
+                .andExpect(jsonPath("$[0].title").value("Integration Test Task"));
+
+        // Retrieve by ID
+        mockMvc.perform(get("/tasks/" + createdTask.id()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(createdTask.id().toString()))
+                .andExpect(jsonPath("$.title").value("Integration Test Task"));
+    }
+
+    @Test
+    void createMultipleTasks_andFilterByStatus_shouldReturnCorrectTasks() throws Exception {
+        // Create pending task
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                            "title": "Pending Task",
+                            "author": "Author 1",
+                            "project": "Project A",
+                            "status": "pending",
+                            "description": "Pending work"
+                        }
+                        """))
+                .andExpect(status().isCreated());
+
+        // Create completed task
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                            "title": "Completed Task",
+                            "author": "Author 2",
+                            "project": "Project B",
+                            "status": "completed",
+                            "description": "Done"
+                        }
+                        """))
+                .andExpect(status().isCreated());
+
+        // Create in-progress task
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                            "title": "In Progress Task",
+                            "author": "Author 3",
+                            "project": "Project C",
+                            "status": "in-progress",
+                            "description": "Working on it"
+                        }
+                        """))
+                .andExpect(status().isCreated());
+
+        // Get all tasks
+        mockMvc.perform(get("/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3));
+
+        // Filter by pending
+        mockMvc.perform(get("/tasks").param("status", "pending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value("pending"));
+
+        // Filter by completed
+        mockMvc.perform(get("/tasks").param("status", "completed"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value("completed"));
+    }
+
+    @Test
+    void deleteTask_shouldRemoveTaskFromSystem() throws Exception {
+        // Create a task
+        String response = mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                            "title": "Task to Delete",
+                            "author": "Author",
+                            "project": "Project",
+                            "status": "pending",
+                            "description": "Will be deleted"
+                        }
+                        """))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Task createdTask = objectMapper.readValue(response, Task.class);
+
+        // Verify task exists
+        mockMvc.perform(get("/tasks/" + createdTask.id()))
+                .andExpect(status().isOk());
+
+        // Delete the task
+        mockMvc.perform(delete("/tasks/" + createdTask.id()))
+                .andExpect(status().isNoContent());
+
+        // Verify task is gone (should throw exception or return 404)
+        mockMvc.perform(get("/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void getTaskCount_shouldReturnCorrectCount() throws Exception {
+        // Initially empty
+        mockMvc.perform(get("/tasks/count"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(0));
+
+        // Create two tasks
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                            "title": "Task 1",
+                            "author": "Author",
+                            "project": "Project",
+                            "status": "pending"
+                        }
+                        """))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                            "title": "Task 2",
+                            "author": "Author",
+                            "project": "Project",
+                            "status": "completed"
+                        }
+                        """))
+                .andExpect(status().isCreated());
+
+        // Check count
+        mockMvc.perform(get("/tasks/count"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(2));
+    }
+}

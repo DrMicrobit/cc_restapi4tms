@@ -1,0 +1,210 @@
+package com.example.task_management_api.controller;
+
+import com.example.task_management_api.model.Task;
+import com.example.task_management_api.service.TaskService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+/**
+ * Unit tests for TaskController using MockMvc. Uses @WebMvcTest to test only the web layer with
+ * mocked service dependencies.
+ */
+@WebMvcTest(TaskController.class)
+class TaskControllerWebLayerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private TaskService taskService;
+
+    @Test
+    void getAllTasks_shouldReturnListOfTasks() throws Exception {
+        // Arrange
+        Task task1 = new Task(
+                UUID.randomUUID(),
+                "Task 1",
+                "John Doe",
+                "Project A",
+                "pending",
+                "Description 1");
+        Task task2 = new Task(
+                UUID.randomUUID(),
+                "Task 2",
+                "Jane Smith",
+                "Project B",
+                "completed",
+                "Description 2");
+        List<Task> tasks = Arrays.asList(task1, task2);
+
+        when(taskService.getAllTasks()).thenReturn(tasks);
+
+        // Act & Assert
+        mockMvc.perform(get("/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].title").value("Task 1"))
+                .andExpect(jsonPath("$[0].author").value("John Doe"))
+                .andExpect(jsonPath("$[1].title").value("Task 2"))
+                .andExpect(jsonPath("$[1].status").value("completed"));
+    }
+
+    @Test
+    void getAllTasks_withStatusFilter_shouldReturnFilteredTasks() throws Exception {
+        // Arrange
+        Task task = new Task(
+                UUID.randomUUID(),
+                "Pending Task",
+                "John Doe",
+                "Project A",
+                "pending",
+                "A pending task");
+        List<Task> tasks = Arrays.asList(task);
+
+        when(taskService.getTasksByStatus("pending")).thenReturn(tasks);
+
+        // Act & Assert
+        mockMvc.perform(get("/tasks")
+                .param("status", "pending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value("pending"));
+    }
+
+    @Test
+    void createTask_withValidData_shouldReturnCreatedTask() throws Exception {
+        // Arrange
+        UUID taskId = UUID.randomUUID();
+        Task createdTask = new Task(
+                taskId,
+                "New Task",
+                "Alice Johnson",
+                "Project X",
+                "in-progress",
+                "Task description");
+
+        when(taskService.createTask(
+                eq("New Task"),
+                eq("Alice Johnson"),
+                eq("Project X"),
+                eq("in-progress"),
+                eq("Task description"))).thenReturn(createdTask);
+
+        String requestBody = """
+                {
+                    "title": "New Task",
+                    "author": "Alice Johnson",
+                    "project": "Project X",
+                    "status": "in-progress",
+                    "description": "Task description"
+                }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(taskId.toString()))
+                .andExpect(jsonPath("$.title").value("New Task"))
+                .andExpect(jsonPath("$.author").value("Alice Johnson"))
+                .andExpect(jsonPath("$.project").value("Project X"))
+                .andExpect(jsonPath("$.status").value("in-progress"))
+                .andExpect(jsonPath("$.description").value("Task description"));
+    }
+
+    @Test
+    void createTask_withMissingTitle_shouldReturnBadRequest() throws Exception {
+        // Arrange
+        String requestBody = """
+                {
+                    "author": "Alice Johnson",
+                    "project": "Project X",
+                    "status": "pending",
+                    "description": "Missing title"
+                }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createTask_withInvalidStatus_shouldReturnBadRequest() throws Exception {
+        // Arrange
+        String requestBody = """
+                {
+                    "title": "Task",
+                    "author": "Author",
+                    "project": "Project",
+                    "status": "invalid-status",
+                    "description": "Description"
+                }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createTask_withoutDescription_shouldSucceed() throws Exception {
+        // Arrange
+        UUID taskId = UUID.randomUUID();
+        Task createdTask = new Task(
+                taskId,
+                "Task Without Description",
+                "Bob Brown",
+                "Project Y",
+                "pending",
+                "");
+
+        when(taskService.createTask(
+                eq("Task Without Description"),
+                eq("Bob Brown"),
+                eq("Project Y"),
+                eq("pending"),
+                eq(""))).thenReturn(createdTask);
+
+        String requestBody = """
+                {
+                    "title": "Task Without Description",
+                    "author": "Bob Brown",
+                    "project": "Project Y",
+                    "status": "pending"
+                }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.description").value(""));
+    }
+}
