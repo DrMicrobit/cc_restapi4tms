@@ -76,6 +76,7 @@
         </li>
         <li><a href="/tasks?status=pending">GET /tasks?status=pending|in-progress|completed</a>
             – Get a task by status
+            <br /> Status can be upper or lower case, e.g. "PENDING" or "pending"
             <br /> Returns: JSON response. If no tasks with given status are present, returns an empty list.
             <br />E.g: <code>curl http://localhost:8080/tasks/status=pending</code>
         </li>
@@ -109,7 +110,9 @@
             <br /> Returns: HTTP 201 and created task as JSON if successful. HTTP 409 already present or unsupported
             status.
             <br /> Mandatory, non-empty fields: title, author, project, status.
+            <br /> Status must be one of "pending", "in-progress", or "completed" (case insensitive).
             <br /> Optional field: description.
+            <br /> All string fields are trimmed of leading/trailing whitespace.
             <br /> Entries with unsupported status or having same author and title present will be rejected.
             <br /> Returns task created if creation successful, else HTTP 409.
             <br /><code>curl -X POST http://localhost:8080/tasks -H "Content-Type: application/json" -d '{
@@ -147,15 +150,25 @@
         <li>created_at (timestamp)</li>
         <li>updated_at (timestamp)</li>
     </ul>
-    <p>Guarantees:</p>
+    <p>Guarantees for this version of the API:</p>
     <ul>
-        <li> all fields, if present, have a valid JSON string as value. I.e., there are no 'null'. Should there be
+        <li>all fields, if present, have a valid JSON string as value. I.e., there are no 'null'. Should there be
             a null, it's a bug.</li>
         <li>Ids are UUIDs and are unique</li>
         <li>timestamps are given in UTC (Zulu) time</li>
+        <li>status currently is always one of "pending", "in-progress", or "completed" (lower case)</li>
+        <li>all string fields are trimmed of leading/trailing whitespace</li>
     </ul>
-    <p>Everything other observed behaviour not guaranteed. E.g.: the order of the fields in the response is not
-        guaranteed. It is not guaranteed that optional fields, when empty, are present.</p>
+    <p>Every other observable or inferred behaviour of the interface or the Task Management System is not guaranteed.
+        E.g.:</p>
+    <ul>
+        <li>the order of the fields in the JSON response is not guaranteed</li>
+        <li>optional fields, when empty, are not guaranteed to be present in the response</li>
+        <li>future versions might add or remove endpoints</li>
+        <li>future versions might add or remove query parameters</li>
+        <li>future versions might add or remove fields</li>
+        <li>future versions might add or remove supported status values</li>
+    </ul>
     <h3>tasks/count, tasks/isempty, tasks/populate</h3>
     <p>Guarantees: they will return HTTP 200 and a JSON response</p>
     <p>No further guarantees as mainly for testing purposes.</p>
