@@ -1,11 +1,12 @@
 package com.example.task_management_api.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,37 +21,55 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 
-// TODO: whitelabel error page for http://localhost:8080/
-// TODO: test posting
+/**
+ * REST controller for managing Tasks. Provides endpoints for creating, retrieving, and deleting
+ * tasks. Supports filtering tasks by status.
+ */
 
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
 
-    private final TaskService taskService;
+    /**
+     * Constructor for TaskController, injecting the TaskService.
+     * 
+     * @param taskService The service layer for task operations.
+     */
 
-    // VSCode says: Unnecessary `@Autowired`
-    // annotationvscode-spring-boot(JAVA_AUTOWIRED_CONSTRUCTOR)
-    // xTODO BaCh: read up above
-
-    @Autowired
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
 
-    // TODO: check "illegal" status strings
-    // TODO: lowercase status?
+    /**
+     * Retrieve all tasks, optionally filtered by status.
+     * 
+     * @param status Optional query parameter to filter tasks by their status.
+     * 
+     * @return A ResponseEntity containing the list of tasks (filtered if status is provided).
+     */
+
     @GetMapping
     public ResponseEntity<List<Task>> getAllTasks(
-            @RequestParam(required = false) String status) {
+            @RequestParam(name = "status", required = false) String status) {
         List<Task> tasks;
-        if (status != null && !status.trim().isEmpty()) {
+        if (status != null) {
+            status = status.trim().toLowerCase();
+        }
+        if (status != null && !status.isEmpty()) {
             tasks = taskService.getTasksByStatus(status);
         } else {
             tasks = taskService.getAllTasks();
         }
         return ResponseEntity.ok(tasks);
     }
+
+    /**
+     * Retrieve a specific task by its unique ID.
+     * 
+     * @param id The UUID of the task to retrieve.
+     * 
+     * @return A ResponseEntity containing the found task, or 404 if not found.
+     */
 
     @GetMapping("/{id}")
     public ResponseEntity<Task> getTaskById(
@@ -59,82 +78,174 @@ public class TaskController {
         return ResponseEntity.ok(task);
     }
 
+    /**
+     * Delete all tasks from the system.
+     * 
+     * @return A ResponseEntity with appropriate status code (204)
+     */
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAllTasks() {
+        taskService.deleteAllTasks();
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Delete a specific task by its unique ID.
+     * 
+     * @param id The UUID of the task to delete.
+     * 
+     * @return A ResponseEntity with appropriate status code (204)
+     */
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTask(@PathVariable UUID id) {
+        taskService.deleteTaskById(id);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
+
+    /**
+     * Create a new task with the provided details.
+     * 
+     * @param request The request body containing task details.
+     * 
+     * @return A ResponseEntity containing the created task with status 201 (Created). If validation
+     *         of the task fails (e.g. status invalid or task duplicate already exists), a 400 (Bad
+     *         Request) response is returned with error details.
+     */
     @PostMapping
     public ResponseEntity<Task> createTask(
             @Valid @RequestBody TaskCreateRequest request) {
         Task createdTask = taskService.createTask(
-                request.getTitle(),
-                request.getAuthor(),
-                request.getProject(),
-                request.getStatus(),
-                request.getDescription());
+                request.title(),
+                request.author(),
+                request.project(),
+                request.status(),
+                request.description());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(createdTask);
     }
 
-    // xTODO BaCh: Claude proposes a class as DTO ... think about record???
+    /**
+     * Get the total count of tasks in the system.
+     * 
+     * @return A ResponseEntity containing a map with the task count.
+     */
 
-    public static class TaskCreateRequest {
-        @NotBlank(message = "Title is required")
-        private String title;
+    @GetMapping("/count")
+    public ResponseEntity<Map<String, Long>> getTaskCount() {
+        long count = taskService.countTasks();
+        return ResponseEntity.ok(Map.of("count", count));
+    }
 
-        @NotBlank(message = "Author is required")
-        private String author;
 
-        @NotBlank(message = "Project is required")
-        private String project;
+    /**
+     * Check if the task repository is empty.
+     * 
+     * @return A ResponseEntity containing a map with a boolean indicating if the repository is
+     *         empty.
+     */
 
-        @NotBlank(message = "Status is required")
-        @Pattern(
-                regexp = "^(pending|in-progress|completed)$",
-                message = "Status must be 'pending', 'in-progress', or 'completed'.")
-        String status;
+    @GetMapping("/isempty")
+    public ResponseEntity<Map<String, Boolean>> getIsEmpty() {
+        boolean empty = taskService.isEmpty();
+        return ResponseEntity.ok(Map.of("empty", empty));
+    }
 
-        private String description = "";
 
-        public TaskCreateRequest() {
-            // xTODO BaCh: hide as private and throw?
-        }
+    /**
+     * Populate the system with a predefined set of tasks for testing or demonstration purposes.
+     * 
+     * @return A ResponseEntity indicating that the tasks have been populated, with status 201
+     *         (Created).
+     */
 
-        public String getTitle() {
-            return title;
-        }
+    @GetMapping("/populate")
+    public ResponseEntity<Map<String, Boolean>> populate() {
+        taskService.createPredefinedTasks();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("populated", true));
+    }
 
-        public void setTitle(String title) {
-            this.title = title;
-        }
+    /**
+     * Record representing the request body for creating a new Task. Includes validation annotations
+     * to ensure required fields are present and valid.
+     * 
+     * Note: description is optional and defaults to an empty string if not provided.
+     * 
+     * @param title Title of the task (required, non-blank).
+     * @param author Author of the task (required, non-blank).
+     * @param project Project associated with the task (required, non-blank).
+     * @param status Status of the task (required, must be one of "pending", "in-progress",
+     *        "completed"). Case insensitive, lower case will be stored.
+     * @param description Description of the task (optional, defaults to empty string if null).
+     */
 
-        public String getAuthor() {
-            return author;
-        }
+    public record TaskCreateRequest(
+            @NotBlank(message = "Title is required") String title,
+            @NotBlank(message = "Author is required") String author,
+            @NotBlank(message = "Project is required") String project,
+            @NotBlank(message = "Status is required") @Pattern(
+                    regexp = "(?i)^(pending|in-progress|completed)$",
+                    message = "Status must be 'pending', 'in-progress', or 'completed'.") String status,
+            String description) {
 
-        public void setAuthor(String author) {
-            this.author = author;
-        }
 
-        public String getProject() {
-            return project;
-        }
+        /**
+         * Canonical constructor. Using it to catch empty descriptions at entry point as well as
+         * transform all strings to their stored version: lower case and trimmed for status, trimmed
+         * for others. This is a design choice that would need to be discussed in a real-world.
+         *
+         */
 
-        public void setProject(String project) {
-            this.project = project;
-        }
+        public TaskCreateRequest {
+            /*
+             * Note to self
+             * 
+             * Optional field like description:
+             * 
+             * If using jackson >=2.9, could go the Jackson annotation route at record declaration
+             * level above: "@JsonSetter(nulls = Nulls.AS_EMPTY) String description"
+             * 
+             * Trimming strings:
+             * 
+             * Could use a custom deserializer with Jackson, but that would require a full class,
+             * not a record. Or use a mix-in. But that seems overkill for this. So doing it here in
+             * the constructor.
+             * 
+             * Could use Jackson’s deserialization customization (Spring Boot). But that would be
+             * more complex and less explicit.
+             * 
+             * In case the challenge text .....................................................
+             * status (string, required, can be "pending" (default), "in-progress", or "completed")
+             * ... needs to be read as "default to 'pending' if not provided", then this can be
+             * addressed here.
+             */
 
-        public String getStatus() {
-            return status;
-        }
 
-        public void setStatus(String status) {
-            this.status = status;
-        }
+            // normalize inputs
 
-        public String getDescription() {
-            return description;
-        }
+            status = status.trim().toLowerCase();
 
-        public void setDescription(String description) {
-            this.description = description;
+            if (description == null) {
+                description = "";
+            } else {
+                description = description.trim();
+            }
+
+            title = title.trim();
+            author = author.trim();
+            project = project.trim();
         }
     }
+
+    // ------------------------------------------------------------------------
+    // Private section from here on
+    // ------------------------------------------------------------------------
+
+
+    private final TaskService taskService;
+
 }

@@ -1,155 +1,59 @@
 package com.example.task_management_api.model;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-// xTODO BaCh: decide/define guarantees (no null returns etc.), docs.
-// xTODO BaCh: decide status ... checks here or somewhere in business layer? Trending toward BL,
-// But then everything could/would there
-// xTODO BaCh: getters/setters with jakarta annotations?
-// xTODO BaCh: decide auto-update "updatedAt" in setters? Trending to "no"
 
-// xTODO BaCh: check sonarqube for exception in num params for constructors?
+/**
+ * Task record, representing a task in the task management system. Using Java Record for
+ * immutability and conciseness. Timestamps are in UTC.
+ * 
+ * @implNote During write-up of "what I learned" (see AIusage.md) and going through the initial
+ *           suggestion of Gemini and with the knowledge I gained here, I realized that my "fix" of
+ *           Claude's suggestion (using ZonedDateTime instead of LocalDateTime) was not good enough.
+ *           ZonedDateTime is apparently not the way to go. The correct type to represent a UTC
+ *           timestamp is Instant. For future consideration.
+ * 
+ * 
+ * @param id Unique identifier for the task.
+ * @param title Title of the task.
+ * @param author Author of the task.
+ * @param project Project associated with the task.
+ * @param status Status of the task (e.g., "open", "in progress", "closed").
+ * @param description Description of the task.
+ * @param createdAt Timestamp when the task was created (in UTC).
+ * @param updatedAt Timestamp when the task was last updated (in UTC).
+ */
 
+public record Task(UUID id,
+        String title, String author,
+        String project, String status,
+        String description,
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'") ZonedDateTime createdAt,
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'") ZonedDateTime updatedAt) {
 
-public class Task {
-
-    public Task( // NOSONAR: yes, I know, 8 parameters
-            @NotBlank UUID id, @NotBlank(message = "Title is required") String title,
-            @NotBlank(message = "Author is required") String author,
-            @NotBlank(message = "Project is required") String project,
-            @NotBlank(message = "Status is required") @Pattern(regexp = "^(pending|in|completed)$",
-                    message = "Status must be 'pending', 'in-progress', or 'completed'.") String status,
-            String description,
-            ZonedDateTime createdAt,
-            ZonedDateTime updatedAt) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.description = description;
-        this.status = status;
-        this.project = project;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
-    // Convenience constructor, timestamps auto
-    public Task(@NotBlank UUID id, @NotBlank(message = "Title is required") String title,
-            @NotBlank(message = "Author is required") String author,
-            @NotBlank(message = "Project is required") String project,
-            @NotBlank(message = "Status is required") @Pattern(
-                    regexp = "^(pending|in-progress|completed)$",
-                    message = "Status must be 'pending', 'in-progress', or 'completed'.") String status,
+    /*
+     * Convenience constructor for creating a new Task with current timestamps in UTC.
+     */
+    public Task(UUID id, String title,
+            String author,
+            String project,
+            String status,
             String description) {
-        this(id, title, author, project, status, description, ZonedDateTime.now(),
-                ZonedDateTime.now());
+        this(id, title, author, project, status, description,
+                LocalDateTime.now().atZone(ZoneId.systemDefault()).withZoneSameInstant(utcZoneId),
+                LocalDateTime.now().atZone(ZoneId.systemDefault()).withZoneSameInstant(utcZoneId));
     }
 
-
-
-    // Claude says: required for Spring.
-    // xTODO: BaCh But then we'd have nulls in some fields. Hmmm. Test private once MVP runs.
-    public Task() {}
-
-    // Boilerplate getter/setter from VS Code
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getProject() {
-        return project;
-    }
-
-    public void setProject(String project) {
-        this.project = project;
-    }
-
-    public ZonedDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(ZonedDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public ZonedDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(ZonedDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 
     // ------------------------------------------------------------------------
     // Private section from here on
     // ------------------------------------------------------------------------
 
-    // xTODO BaCh: decide on null vs ""
-
-    @NotBlank
-    private UUID id;
-
-    @NotBlank(message = "Title is required")
-    private String title;
-
-    @NotBlank(message = "Author is required")
-    private String author;
-
-    private String description;
-
-    @NotBlank(message = "Status is required")
-    @Pattern(regexp = "^(pending|in-progress|completed)$",
-            message = "Status must be 'pending', 'in-progress', or 'completed'.")
-    private String status;
-
-    @NotBlank(message = "Project is required")
-    private String project;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
-    private ZonedDateTime createdAt;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
-    private ZonedDateTime updatedAt;
-
+    // static ZoneId for conversion of local date to UTC by convenience constructor
+    private static ZoneId utcZoneId = ZoneId.of("UTC");
 
 }
