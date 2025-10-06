@@ -225,4 +225,44 @@ class TaskControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(2));
     }
+
+
+    /**
+     * Claude missed this test case for the unique constraint on (title, author).
+     */
+
+    @Test
+    void createTask_withDuplicateTitleAndAuthor_shouldReturnConflict() throws Exception {
+        // Create first task
+        String firstRequest = """
+                {
+                    "title": "Duplicate Task",
+                    "author": "John Doe",
+                    "project": "Project A",
+                    "status": "pending",
+                    "description": "First task"
+                }
+                """;
+
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(firstRequest))
+                .andExpect(status().isCreated());
+
+        // Attempt to create duplicate task with same title and author
+        String duplicateRequest = """
+                {
+                    "title": "Duplicate Task",
+                    "author": "John Doe",
+                    "project": "Project B",
+                    "status": "completed",
+                    "description": "Second task"
+                }
+                """;
+
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(duplicateRequest))
+                .andExpect(status().isConflict());
+    }
 }
