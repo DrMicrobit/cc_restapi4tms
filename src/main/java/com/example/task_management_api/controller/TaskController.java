@@ -179,7 +179,7 @@ public class TaskController {
      * @param author Author of the task (required, non-blank).
      * @param project Project associated with the task (required, non-blank).
      * @param status Status of the task (required, must be one of "pending", "in-progress",
-     *        "completed").
+     *        "completed"). Case insensitive, lower case will be stored.
      * @param description Description of the task (optional, defaults to empty string if null).
      */
 
@@ -188,22 +188,56 @@ public class TaskController {
             @NotBlank(message = "Author is required") String author,
             @NotBlank(message = "Project is required") String project,
             @NotBlank(message = "Status is required") @Pattern(
-                    regexp = "^(pending|in-progress|completed)$",
+                    regexp = "(?i)^(pending|in-progress|completed)$",
                     message = "Status must be 'pending', 'in-progress', or 'completed'.") String status,
             String description) {
 
 
         /**
-         * Canonical constructor. Using it to catch empty descriptions at entry point
+         * Canonical constructor. Using it to catch empty descriptions at entry point as well as
+         * transform all strings to their stored version: lower case and trimmed for status, trimmed
+         * for others. This is a design choice that would need to be discussed in a real-world.
          *
-         * If using jackson >=2.9, could go the Jackson annotation route at record declaration level
-         * above: * "@JsonSetter(nulls = Nulls.AS_EMPTY) String description"
          */
+
         public TaskCreateRequest {
-            // normalize null description to empty string
+            /*
+             * Note to self
+             * 
+             * Optional field like description:
+             * 
+             * If using jackson >=2.9, could go the Jackson annotation route at record declaration
+             * level above: "@JsonSetter(nulls = Nulls.AS_EMPTY) String description"
+             * 
+             * Trimming strings:
+             * 
+             * Could use a custom deserializer with Jackson, but that would require a full class,
+             * not a record. Or use a mix-in. But that seems overkill for this. So doing it here in
+             * the constructor.
+             * 
+             * Could use Jackson’s deserialization customization (Spring Boot). But that would be
+             * more complex and less explicit.
+             * 
+             * In case the challenge text .....................................................
+             * status (string, required, can be "pending" (default), "in-progress", or "completed")
+             * ... needs to be read as "default to 'pending' if not provided", then this can be
+             * addressed here.
+             */
+
+
+            // normalize inputs
+
+            status = status.trim().toLowerCase();
+
             if (description == null) {
                 description = "";
+            } else {
+                description = description.trim();
             }
+
+            title = title.trim();
+            author = author.trim();
+            project = project.trim();
         }
     }
 
