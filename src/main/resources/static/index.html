@@ -64,32 +64,40 @@
         }
     </script>
     <h1>Welcome to Task Management API</h1>
+    <h2>General</h2>
     <p>Minimal documentation. Ideally generated automatically, but static index.html atm.</p>
     <p>Links will execute the endpoints.</p>
-    <p>Available endpoints:</p>
+    <h2>Endpoints</h2>
+    <p>Available endpoints are:</p>
     <ul>
         <li><a href="/tasks">GET /tasks</a> – List all tasks
+            <br /> Returns: JSON response. If no tasks are present, returns an empty list.
             <br />E.g: <code>curl http://localhost:8080/tasks</code>
         </li>
         <li><a href="/tasks?status=pending">GET /tasks?status=pending|in-progress|completed</a>
             – Get a task by status
+            <br /> Returns: JSON response. If no tasks with given status are present, returns an empty list.
             <br />E.g: <code>curl http://localhost:8080/tasks/status=pending</code>
         </li>
         <li><a href="/tasks/123e4567-e89b-12d3-a456-426614174000">GET /tasks/{id}</a>
-            – Get a task by ID. Returns HTTP
+            – Get a task by ID.
+            <br /> Returns: JSON response of task with given ID. Returns HTTP
             404 if task does not exist.
             <br />E.g: <code>curl http://localhost:8080/tasks/123e4567-e89b-12d3-a456-426614174000</code>
         </li>
         <li><a href="/tasks/count">GET /tasks/count</a>
             – Get a number of tasks in repository.
+            <br /> Returns: JSON response with number of tasks.
             <br />E.g: <code>curl http://localhost:8080/tasks/count</code>
         </li>
         <li><a href="/tasks/isempty">GET /tasks/isempty</a>
             – Whether tasks are in repository.
+            <br /> Returns: JSON response with true/false.
             <br />E.g: <code>curl http://localhost:8080/tasks/isempty</code>
         </li>
         <li><a href="/tasks/populate">GET /tasks/populate</a>
             – Add two predefined tasks to repository (if not already present)
+            <br /> Returns: JSON response with true.
             <br />E.g: <code>curl http://localhost:8080/tasks/populate</code>
         </li>
         <li>
@@ -98,6 +106,8 @@
                 POST /tasks
             </a> – Create a task. (the POST link here creates a new entry if not present)
             <br /> Post as JSON format.
+            <br /> Returns: HTTP 201 and created task as JSON if successful. HTTP 409 already present or unsupported
+            status.
             <br /> Mandatory, non-empty fields: title, author, project, status.
             <br /> Optional field: description.
             <br /> Entries with unsupported status or having same author and title present will be rejected.
@@ -111,17 +121,20 @@
                 <br/>}'
 </code>
         </li>
-        <li> <a href="#" onclick="postJson('/tasks/550e8400-e29b-41d4-a716-446655440000', 'DELETE',{}); return false;">
+        <li> <a href="/" onclick="postJson('/tasks/550e8400-e29b-41d4-a716-446655440000', 'DELETE',{}); return false;">
                 POST /tasks
                 DELETE /tasks/{id} </a>– Delete a task by ID. (the link here deletes one of the predefined tasks)
-            <br /> Always returns HTTP 204, even if task did not exist.
+            <br /> Returns: always returns HTTP 204, even if task with given Id did not exist.
             <br />E.g: <code>curl -v -X DELETE http://localhost:8080/tasks/550e8400-e29b-41d4-a716-446655440000</code>
         </li>
-        <li> <a href="#" onclick="postJson('/tasks', 'DELETE',{}); return false;">
-                DELETE /tasks</a> – Delete all tasks. Always returns HTTP 204, even if no tasks was present.
+        <li> <a href="/" onclick="postJson('/tasks', 'DELETE',{}); return false;">
+                DELETE /tasks</a> – Delete all tasks.
+            <br /> Returns: always HTTP 204, even if no tasks was present.
             <br />E.g: <code>curl -v -X DELETE http://localhost:8080/tasks</code>
         </li>
     </ul>
+    <h2>JSON results</h2>
+    <h3>Task</h3>
     <p>Structure of a task:</p>
     <ul>
         <li>Task fields:</li>
@@ -134,6 +147,18 @@
         <li>created_at (timestamp)</li>
         <li>updated_at (timestamp)</li>
     </ul>
+    <p>Guarantees:</p>
+    <ul>
+        <li> all fields, if present, have a valid JSON string as value. I.e., there are no 'null'. Should there be
+            a null, it's a bug.</li>
+        <li>Ids are UUIDs and are unique</li>
+        <li>timestamps are given in UTC (Zulu) time</li>
+    </ul>
+    <p>Everything other observed behaviour not guaranteed. E.g.: the order of the fields in the response is not
+        guaranteed. It is not guaranteed that optional fields, when empty, are present.</p>
+    <h3>tasks/count, tasks/isempty, tasks/populate</h3>
+    <p>Guarantees: they will return HTTP 200 and a JSON response</p>
+    <p>No further guarantees as mainly for testing purposes.</p>
 </body>
 
 </html>
