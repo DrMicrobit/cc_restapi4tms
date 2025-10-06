@@ -8,21 +8,17 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 
 /**
- *
- * Barebone record for storing tasks. No checks whatsoever as these are expected to be done by
- * business layer (TaskService) and jakarta annotations there. To be discussed in real production
- * environments.
- *
- * @apiNote All parameters are nullable atm and will also be given back as null.
- *
- * @param id id of the task
- * @param title
- * @param author
- * @param project
- * @param status
- * @param description
- * @param createdAt creation time, should be UTC!
- * @param updatedAt
+ * Task record, representing a task in the task management system. Using Java Record for
+ * immutability and conciseness. Timestamps are in UTC.
+ * 
+ * @param id Unique identifier for the task.
+ * @param title Title of the task.
+ * @param author Author of the task.
+ * @param project Project associated with the task.
+ * @param status Status of the task (e.g., "open", "in progress", "closed").
+ * @param description Description of the task.
+ * @param createdAt Timestamp when the task was created (in UTC).
+ * @param updatedAt Timestamp when the task was last updated (in UTC).
  */
 
 public record Task(UUID id,
@@ -32,8 +28,9 @@ public record Task(UUID id,
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'") ZonedDateTime createdAt,
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'") ZonedDateTime updatedAt) {
 
-    // Convenience constructor, timestamps auto
-    // xTODO: check: is java compiler smart enough to re-use the LocalDateTime call?
+    /*
+     * Convenience constructor for creating a new Task with current timestamps in UTC.
+     */
     public Task(UUID id, String title,
             String author,
             String project,

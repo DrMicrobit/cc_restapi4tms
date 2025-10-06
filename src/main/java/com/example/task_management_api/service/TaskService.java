@@ -14,18 +14,42 @@ import jakarta.annotation.PostConstruct;
 import com.example.task_management_api.model.Task;
 
 
-// xTODO: guarantees and docs
+/**
+ * Service layer for task management. Implements business logic and interacts with the repository
+ * layer.
+ * <p>
+ * This service provides methods to create, read, and delete tasks, as well as to perform specific
+ * queries such as counting tasks or checking if the repository is empty. No update functionality is
+ * implemented at this time.
+ * </p>
+ * <p>
+ * Error handling is implemented using {@link ResponseStatusException} to provide appropriate HTTP
+ * status codes for various error scenarios. This is a design choice for simplicity in this example,
+ * but in a production application, a more robust error handling strategy and separation of concerns
+ * would be advisable.
+ * </p>
+ * <p>
+ * The service also includes an initialization method to populate the repository with predefined
+ * tasks at startup, if the repository is empty. This is primarily for testing and demonstration
+ * purposes.
+ * </p>
+ */
+
 
 
 @Service
 public class TaskService {
-    private final TaskRepository taskRepository;
-
-
+    /*
+     * Constructor
+     */
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 
+    /**
+     * At startup, initializes the repository with two predefined tasks, if repository is empty.
+     * Used for testing and demo purposes.
+     */
     @PostConstruct
     public void initializeTasks() {
         if (taskRepository.isEmpty()) {
@@ -35,6 +59,23 @@ public class TaskService {
 
 
     // Create
+
+    /**
+     * Creates a new task in repository. If a task with same title and author already exists, throws
+     * 409.
+     * 
+     * @apiNote: Broken separation of concerns, as throwing HTTP exception from service layer.
+     * 
+     * @param title the title of the task
+     * @param author the author of the task
+     * @param project the project the task belongs to
+     * @param status the status of the task, must be one of "pending", "in-progress", "completed"
+     * @param description the description of the task
+     * @return the created task
+     * @throws ResponseStatusException with status 409 if a task with same title and author already
+     *         exists
+     * @throws ResponseStatusException with status 400 if status is invalid
+     */
     public Task createTask(String title, String author, String project, String status,
             String description) {
         // duplicate check: author / title
@@ -50,10 +91,24 @@ public class TaskService {
 
     // Read
 
+    /**
+     * Get all tasks in repository.
+     * 
+     * @return list of all tasks, possibly empty
+     */
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
+    /**
+     * Get all tasks with given status. If status is invalid, throws 400.
+     * 
+     * @apiNote: Broken separation of concerns, as throwing HTTP exception from service layer.
+     * 
+     * @param status the status to filter by
+     * @return list of tasks with given status, possibly empty
+     * @throws ResponseStatusException with status 400 if status is invalid
+     */
     public List<Task> getTasksByStatus(String status) {
         if (!isValidStatus(status)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -63,6 +118,17 @@ public class TaskService {
         return taskRepository.findByStatus(status);
     }
 
+    /*
+     * Get a task by its UUID. If no such task exists, throws 404.
+     * 
+     * @apiNote: Broken separation of concerns, as throwing HTTP exception from service layer.
+     * 
+     * @param id the UUID of the task to retrieve
+     * 
+     * @return the task with the given UUID if it exists
+     * 
+     * @throws ResponseStatusException with status 404 if no such task exists
+     */
     public Task getTaskById(UUID id) {
         return taskRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -70,22 +136,46 @@ public class TaskService {
     }
 
     // Update
-    // nothing atm
+    // will not implement atm
 
     // Delete
+
+    /**
+     * Deletes all tasks from repository. If repository is already empty, does nothing.
+     */
     public void deleteAllTasks() {
         taskRepository.clear();
     }
 
+    /**
+     * Deletes a task by its UUID. If no such task exists, does nothing.
+     * 
+     * @param id the UUID of the task to delete
+     */
     public void deleteTaskById(UUID id) {
         taskRepository.deleteById(id);;
     }
 
     // Special queries empty and count
+
+
+    /**
+     * Counts the number of tasks in repository.
+     * 
+     * @return the number of tasks in repository
+     */
     public long countTasks() {
         return taskRepository.count();
     }
 
+    /**
+     * Checks if repository is empty.
+     * 
+     * @apiNote Probably not canon for Spring containers, but cheap enough to implement and could be
+     *          important later in production to alleviate stress on a real DB.
+     * 
+     * @return true if repository is empty, false if not
+     */
     public boolean isEmpty() {
         return taskRepository.isEmpty();
     }
@@ -93,9 +183,13 @@ public class TaskService {
 
 
     /**
-     * Add two pre-defined tasks to the repository.
-     *
-     * Careful: Barebone task creation, not going through validator.
+     * Creates two predefined tasks in repository, if not already present. Used for testing and demo
+     * purposes.
+     * 
+     * @implNote Careful: Barebone task creation, not going through validators!
+     * @implNote The UUIDs and timestamps are hardcoded, so that tests can rely on them. If the
+     *           tasks are already present (e.g. from a previous run), does nothing. If only one of
+     *           the two tasks is present, still creates both
      */
     public void createPredefinedTasks() {
         UUID taskId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
@@ -106,7 +200,7 @@ public class TaskService {
                 "Implement User Authentication",
                 "Alice Johnson",
                 "Authentication System", // Missing in Challenge Instructions
-                "pending",
+                "pending", // NOSONAR // no, I won't define a constant for that
                 "Create a secure user authentication system using JWT.",
                 tCreated,
                 tUpdated);
@@ -121,23 +215,24 @@ public class TaskService {
                 "Design Database Scheme",
                 "Bob Smith",
                 "Database Design", // Missing in Challenge Instructions
-                "pending",
+                "pending", // NOSONAR // no, I won't define a constant for that
                 "Draft the database schema for the project",
                 tCreated,
                 tUpdated);
         taskRepository.create(task);
 
-        taskRepository.create(new Task(
-                UUID.randomUUID(),
-                "Testing programs right",
-                // "A. Nonymous",
-                null,
-                "RESTful API",
-                "in-progress",
-                "What can I say ...?"));
+        /*
+         * tested how things react to nulls. Not pretty. Especially if title or author or is null,
+         * createTask will fail add an a new task, as the repository query to check for duplicates
+         * fails.
+         *
+         * Decision: atm rely on defense in controller, not here or in repository / model.
+         *
+         * taskRepository.create(new Task( UUID.randomUUID(), "Testing programs right", //
+         * "A. Nonymous", null, "RESTful API", "in-progress", "What can I say ...?"));
+         * 
+         */
 
-        // xTODO: don't like println, read up on how to log with spring
-        System.out.println("Initialised " + taskRepository.count() + " predefined tasks.");
     }
 
 
@@ -145,6 +240,9 @@ public class TaskService {
     // ------------------------------------------------------------------------
     // Private section from here on
     // ------------------------------------------------------------------------
+
+    private final TaskRepository taskRepository;
+
 
     /**
      * As not using enum, this set of strings to bundle all valid status

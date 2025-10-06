@@ -5,11 +5,19 @@ import java.util.Optional;
 import java.util.UUID;
 import com.example.task_management_api.model.Task;
 
-// Interface for basic repository with CRUD capabilities
-// Additional convenience functions like known from containers (clear(), isEmpty(), etc.)
 
-// xTODO: decide whether existsByTitleAndAuthor here or in business logic
-// Trending to "here" for simplicity atm, or else need to implement find with equality callbacks
+
+/**
+ * Repository interface for managing Task entities with CRUD operations and additional utility
+ * methods.
+ * 
+ * Create, Read, Delete operations are supported along with methods to check existence, count, and
+ * clear the repository.
+ * 
+ * @apiNote This interface does not include update operations for simplicity of toy project.
+ * @apiNote existsByTitleAndAuthor is included here for simplicity, though it could (should?) also
+ *          be part of business logic.
+ */
 
 public interface TaskRepository {
 

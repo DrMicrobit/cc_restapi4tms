@@ -84,3 +84,7 @@ Decision: will not implement update functionality / endpoints.
 ## Logging
 
 Decision: will not implement a Logger. Seems simple enough, but too much for toy project.
+
+## Documentation
+
+Switched on Copilot for documenting classes. Massive time saver, adapts to style. Not always 100% accurate, but close enough to easily rectify.
