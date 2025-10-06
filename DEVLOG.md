@@ -32,6 +32,7 @@ Fields:
 - timestamps
   - store as ZonedDateTime instead of string to allow future sorting operations
   - decision: stored completely (no truncation to seconds) (again, business logic!)
+  - learning (later): Claude used non-optimal proposal (LocalDateTime). My fix with ZonedDateTime seems ok-ish, but according to Gemini and ChatGPT, java.time.Instant is the way to go. For future reference.
 
 ## Repository
 

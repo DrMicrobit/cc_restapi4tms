@@ -241,6 +241,8 @@ public class TaskService {
     // Private section from here on
     // ------------------------------------------------------------------------
 
+    // Repository instance, injected by Spring. Later could be interface to allow
+    // different implementations and injection of mock repository for testing.
     private final TaskRepository taskRepository;
 
 

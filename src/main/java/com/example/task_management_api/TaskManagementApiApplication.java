@@ -9,6 +9,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *           logging, alerts, etc. As a side effect, exceptions thrown that handle bad user input
  *           also directly throw HTTP errors for the controller to answer directly. That is not
  *           proper separation of concerns, but enough to get this toy project going.
+ * 
+ * @implNote No injection of specific repository implementation via interface atm. Would be better
+ *           to allow different implementations (e.g. in-memory, database, mock for testing). But
+ *           simplicity first.
  *
  ******************************************************************************/
 

@@ -11,6 +11,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
  * Task record, representing a task in the task management system. Using Java Record for
  * immutability and conciseness. Timestamps are in UTC.
  * 
+ * @implNote During write-up of "what I learned" (see AIusage.md) and going through the initial
+ *           suggestion of Gemini and with the knowledge I gained here, I realized that my "fix" of
+ *           Claude's suggestion (using ZonedDateTime instead of LocalDateTime) was not good enough.
+ *           ZonedDateTime is apparently not the way to go. The correct type to represent a UTC
+ *           timestamp is Instant. For future consideration.
+ * 
+ * 
  * @param id Unique identifier for the task.
  * @param title Title of the task.
  * @param author Author of the task.
