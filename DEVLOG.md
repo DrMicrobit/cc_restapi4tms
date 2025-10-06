@@ -1,6 +1,6 @@
 # DevLog
 
-Thoughts & decisions BaCh.
+Thoughts & decisions BaCh during devlopment. More a braindump than organised thoughts.
 
 ## Entity
 
