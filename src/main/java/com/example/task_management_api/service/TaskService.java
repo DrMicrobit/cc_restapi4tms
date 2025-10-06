@@ -1,6 +1,6 @@
 package com.example.task_management_api.service;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -193,8 +193,8 @@ public class TaskService {
      */
     public void createPredefinedTasks() {
         UUID taskId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
-        ZonedDateTime tCreated = ZonedDateTime.parse("2025-09-29T13:23:16Z");
-        ZonedDateTime tUpdated = ZonedDateTime.parse("2025-09-29T13:23:16Z");
+        Instant tCreated = Instant.parse("2025-09-29T13:23:16Z");
+        Instant tUpdated = Instant.parse("2025-09-29T13:23:16Z");
         Task task = new Task(
                 taskId,
                 "Implement User Authentication",
@@ -208,8 +208,8 @@ public class TaskService {
 
 
         taskId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        tCreated = ZonedDateTime.parse("2025-09-28T10:15:30Z");
-        tUpdated = ZonedDateTime.parse("2025-09-29T09:00:00Z");
+        tCreated = Instant.parse("2025-09-28T10:15:30Z");
+        tUpdated = Instant.parse("2025-09-29T09:00:00Z");
         task = new Task(
                 taskId,
                 "Design Database Scheme",
