@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Task Management API</title>
+</head>
+
+<body>
+    <script>
+        /**
+         * Reusable function to POST JSON to a given URL
+         * @param {string} url - The endpoint URL
+         * @param {string} method - HTTP method (e.g., 'POST', 'PUT')
+         * @param {Object} data - JavaScript object to send as JSON
+         */
+        function postJson(url, method, data) {
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    const status = response.status;
+                    const statusText = response.statusText;
+
+                    if (!response.ok) {
+                        // Get the error response as text/HTML and display it
+                        return response.text().then(html => {
+                            document.open();
+                            document.write(`<h2>Response: ${status} ${statusText}</h2>`);
+                            document.write(html);
+                            document.close();
+                            throw new Error('Request failed'); // Stop the chain
+                        });
+                    }
+
+                    // Check Content-Type to determine how to handle the response
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json().then(data => ({ data, status, statusText, isJson: true }));
+                    } else {
+                        // Handle as HTML/text
+                        return response.text().then(data => ({ data, status, statusText, isJson: false }));
+                    }
+                })
+                .then(result => {
+                    document.open();
+                    document.write(`<h2>Response: ${result.status} ${result.statusText}</h2>`);
+
+                    if (result.isJson) {
+                        // It's JSON
+                        document.write('<pre>' + JSON.stringify(result.data, null, 2) + '</pre>');
+                    } else {
+                        // It's HTML/text
+                        document.write(result.data);
+                    }
+                    document.close();
+                })
+                .catch(error => {
+                    // This catches network errors, not HTTP errors (those are handled above)
+                    console.error('Network error:', error);
+                });
+        }
+    </script>
+    <h1>Welcome to Task Management API</h1>
+    <h2>General</h2>
+    <p>Minimal documentation. Ideally generated automatically, but static index.html atm.</p>
+    <p>Links will execute the endpoints.</p>
+    <h2>Endpoints</h2>
+    <p>Available endpoints are:</p>
+    <ul>
+        <li><a href="/tasks">GET /tasks</a> – List all tasks
+            <br /> Returns: JSON response. If no tasks are present, returns an empty list.
+            <br />E.g: <code>curl http://localhost:8080/tasks</code>
+        </li>
+        <li><a href="/tasks?status=pending">GET /tasks?status=pending|in-progress|completed</a>
+            – Get a task by status
+            <br /> Status can be upper or lower case, e.g. "PENDING" or "pending"
+            <br /> Returns: JSON response. If no tasks with given status are present, returns an empty list.
+            <br />E.g: <code>curl http://localhost:8080/tasks/status=pending</code>
+        </li>
+        <li><a href="/tasks/123e4567-e89b-12d3-a456-426614174000">GET /tasks/{id}</a>
+            – Get a task by ID.
+            <br /> Returns: JSON response of task with given ID. Returns HTTP
+            404 if task does not exist.
+            <br />E.g: <code>curl http://localhost:8080/tasks/123e4567-e89b-12d3-a456-426614174000</code>
+        </li>
+        <li><a href="/tasks/count">GET /tasks/count</a>
+            – Get a number of tasks in repository.
+            <br /> Returns: JSON response with number of tasks.
+            <br />E.g: <code>curl http://localhost:8080/tasks/count</code>
+        </li>
+        <li><a href="/tasks/isempty">GET /tasks/isempty</a>
+            – Whether tasks are in repository.
+            <br /> Returns: JSON response with true/false.
+            <br />E.g: <code>curl http://localhost:8080/tasks/isempty</code>
+        </li>
+        <li><a href="/tasks/populate">GET /tasks/populate</a>
+            – Add two predefined tasks to repository (if not already present)
+            <br /> Returns: JSON response with true.
+            <br />E.g: <code>curl http://localhost:8080/tasks/populate</code>
+        </li>
+        <li>
+            <a href="/"
+                onclick="postJson('/tasks', 'POST', {title:'Read manual for \'posting\' on how to save queries etc.', author: 'BaCh', project: 'Learning', status:'pending', description: 'Might be more efficient than constantly curl in development.'}); return false;">
+                POST /tasks
+            </a> – Create a task. (the POST link here creates a new entry if not present)
+            <br /> Post as JSON format.
+            <br /> Returns: HTTP 201 and created task as JSON if successful. HTTP 409 already present or unsupported
+            status.
+            <br /> Mandatory, non-empty fields: title, author, project, status.
+            <br /> Status must be one of "pending", "in-progress", or "completed" (case insensitive).
+            <br /> Optional field: description.
+            <br /> All string fields are trimmed of leading/trailing whitespace.
+            <br /> Entries with unsupported status or having same author and title present will be rejected.
+            <br /> Returns task created if creation successful, else HTTP 409.
+            <br /><code>curl -X POST http://localhost:8080/tasks -H "Content-Type: application/json" -d '{
+                <br/>  "title": "Read manual for 'posting' on how to save queries etc.",
+                <br/>  "author": "BaCh",
+                <br/>  "project": "Learning",
+                <br/>  "status": "pending",
+                <br/>  "description": "Might be more efficient than constantly curl in development."
+                <br/>}'
+</code>
+        </li>
+        <li> <a href="/" onclick="postJson('/tasks/550e8400-e29b-41d4-a716-446655440000', 'DELETE',{}); return false;">
+                POST /tasks
+                DELETE /tasks/{id} </a>– Delete a task by ID. (the link here deletes one of the predefined tasks)
+            <br /> Returns: always returns HTTP 204, even if task with given Id did not exist.
+            <br />E.g: <code>curl -v -X DELETE http://localhost:8080/tasks/550e8400-e29b-41d4-a716-446655440000</code>
+        </li>
+        <li> <a href="/" onclick="postJson('/tasks', 'DELETE',{}); return false;">
+                DELETE /tasks</a> – Delete all tasks.
+            <br /> Returns: always HTTP 204, even if no tasks was present.
+            <br />E.g: <code>curl -v -X DELETE http://localhost:8080/tasks</code>
+        </li>
+    </ul>
+    <h2>JSON results</h2>
+    <h3>Task</h3>
+    <p>Structure of a task:</p>
+    <ul>
+        <li>Task fields:</li>
+        <li>id (unique identifier)</li>
+        <li>title (string, required)</li>
+        <li>author (string, required)</li>
+        <li>description (string, optional)</li>
+        <li>status (string, required, can be "pending" (default), "in-progress", or "completed")</li>
+        <li>project (string, required)</li>
+        <li>created_at (timestamp)</li>
+        <li>updated_at (timestamp)</li>
+    </ul>
+    <p>Guarantees for this version of the API:</p>
+    <ul>
+        <li>all fields, if present, have a valid JSON string as value. I.e., there are no 'null'. Should there be
+            a null, it's a bug.</li>
+        <li>Ids are UUIDs and are unique</li>
+        <li>timestamps are given in UTC (Zulu) time</li>
+        <li>status currently is always one of "pending", "in-progress", or "completed" (lower case)</li>
+        <li>all string fields are trimmed of leading/trailing whitespace</li>
+    </ul>
+    <p>Every other observable or inferred behaviour of the interface or the Task Management System is not guaranteed.
+        E.g.:</p>
+    <ul>
+        <li>the order of the fields in the JSON response is not guaranteed</li>
+        <li>optional fields, when empty, are not guaranteed to be present in the response</li>
+        <li>future versions might add or remove endpoints</li>
+        <li>future versions might add or remove query parameters</li>
+        <li>future versions might add or remove fields</li>
+        <li>future versions might add or remove supported status values</li>
+    </ul>
+    <h3>tasks/count, tasks/isempty, tasks/populate</h3>
+    <p>Guarantees: they will return HTTP 200 and a JSON response</p>
+    <p>No further guarantees as mainly for testing purposes.</p>
+</body>
+
+</html>
