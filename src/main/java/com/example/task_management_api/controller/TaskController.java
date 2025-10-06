@@ -21,15 +21,32 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 
+/**
+ * REST controller for managing Tasks. Provides endpoints for creating, retrieving, and deleting
+ * tasks. Supports filtering tasks by status.
+ */
+
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
 
-    private final TaskService taskService;
+    /**
+     * Constructor for TaskController, injecting the TaskService.
+     * 
+     * @param taskService The service layer for task operations.
+     */
 
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
+
+    /**
+     * Retrieve all tasks, optionally filtered by status.
+     * 
+     * @param status Optional query parameter to filter tasks by their status.
+     * 
+     * @return A ResponseEntity containing the list of tasks (filtered if status is provided).
+     */
 
     @GetMapping
     public ResponseEntity<List<Task>> getAllTasks(
@@ -46,6 +63,14 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
+    /**
+     * Retrieve a specific task by its unique ID.
+     * 
+     * @param id The UUID of the task to retrieve.
+     * 
+     * @return A ResponseEntity containing the found task, or 404 if not found.
+     */
+
     @GetMapping("/{id}")
     public ResponseEntity<Task> getTaskById(
             @PathVariable UUID id) {
@@ -53,11 +78,25 @@ public class TaskController {
         return ResponseEntity.ok(task);
     }
 
+    /**
+     * Delete all tasks from the system.
+     * 
+     * @return A ResponseEntity with appropriate status code (204)
+     */
+
     @DeleteMapping
     public ResponseEntity<Void> deleteAllTasks() {
         taskService.deleteAllTasks();
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Delete a specific task by its unique ID.
+     * 
+     * @param id The UUID of the task to delete.
+     * 
+     * @return A ResponseEntity with appropriate status code (204)
+     */
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable UUID id) {
@@ -65,6 +104,16 @@ public class TaskController {
         return ResponseEntity.noContent().build(); // 204 No Content
     }
 
+
+    /**
+     * Create a new task with the provided details.
+     * 
+     * @param request The request body containing task details.
+     * 
+     * @return A ResponseEntity containing the created task with status 201 (Created). If validation
+     *         of the task fails (e.g. status invalid or task duplicate already exists), a 400 (Bad
+     *         Request) response is returned with error details.
+     */
     @PostMapping
     public ResponseEntity<Task> createTask(
             @Valid @RequestBody TaskCreateRequest request) {
@@ -79,11 +128,25 @@ public class TaskController {
                 .body(createdTask);
     }
 
+    /**
+     * Get the total count of tasks in the system.
+     * 
+     * @return A ResponseEntity containing a map with the task count.
+     */
+
     @GetMapping("/count")
     public ResponseEntity<Map<String, Long>> getTaskCount() {
         long count = taskService.countTasks();
         return ResponseEntity.ok(Map.of("count", count));
     }
+
+
+    /**
+     * Check if the task repository is empty.
+     * 
+     * @return A ResponseEntity containing a map with a boolean indicating if the repository is
+     *         empty.
+     */
 
     @GetMapping("/isempty")
     public ResponseEntity<Map<String, Boolean>> getIsEmpty() {
@@ -91,12 +154,34 @@ public class TaskController {
         return ResponseEntity.ok(Map.of("empty", empty));
     }
 
+
+    /**
+     * Populate the system with a predefined set of tasks for testing or demonstration purposes.
+     * 
+     * @return A ResponseEntity indicating that the tasks have been populated, with status 201
+     *         (Created).
+     */
+
     @GetMapping("/populate")
     public ResponseEntity<Map<String, Boolean>> populate() {
         taskService.createPredefinedTasks();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("populated", true));
     }
+
+    /**
+     * Record representing the request body for creating a new Task. Includes validation annotations
+     * to ensure required fields are present and valid.
+     * 
+     * Note: description is optional and defaults to an empty string if not provided.
+     * 
+     * @param title Title of the task (required, non-blank).
+     * @param author Author of the task (required, non-blank).
+     * @param project Project associated with the task (required, non-blank).
+     * @param status Status of the task (required, must be one of "pending", "in-progress",
+     *        "completed").
+     * @param description Description of the task (optional, defaults to empty string if null).
+     */
 
     public record TaskCreateRequest(
             @NotBlank(message = "Title is required") String title,
@@ -121,4 +206,12 @@ public class TaskController {
             }
         }
     }
+
+    // ------------------------------------------------------------------------
+    // Private section from here on
+    // ------------------------------------------------------------------------
+
+
+    private final TaskService taskService;
+
 }
