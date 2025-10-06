@@ -51,6 +51,8 @@ In short, 3 major phases:
 
 That is, before writing a single line of code, I wanted to dog-food Claude by asking it to generate an implementation, step-by-step, according to its proposal. If during review of the answers I were to find obvious bugs or weirdnesses, I would make the LLM aware of this to get a new version. Once finished, I planned to have the result become "my" first prototype on which to build on, learn, refactor, and fix problems mostly by hand.
 
+I also ended up testing whether Claude 4.5 Sonnet (public web interface) could generate test cases fully automatically.
+
 ### Step by step methodology, results, and (opinionated) final thoughts
 
 See file [AIUsage.md](./AIUsage.md).
