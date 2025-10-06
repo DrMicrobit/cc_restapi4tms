@@ -1,6 +1,8 @@
+# DevLog
 
-Entity
-======
+Thoughts & decisions BaCh.
+
+## Entity
 
 In model/Task.java
 
@@ -24,12 +26,14 @@ Fields:
   - should naturally be an enum internally
   - but input via REST ... and text anyway
   - decision: KISS at first, i.e., strings. And opportunity to test jakarta validator.
+    Learning: Task entity is wrong place for validation. Claude goofed.
+  - slightly contradicting instructions: "required", but "default pending"
+  - decision: treat as required in POSTs
 - timestamps
   - store as ZonedDateTime instead of string to allow future sorting operations
   - decision: stored completely (no truncation to seconds) (again, business logic!)
 
-Repository
-==========
+## Repository
 
 Realise via interface to provide future flexibility. Doesn't cost much effort, so eh.
 
@@ -44,36 +48,39 @@ Unhappy:
 - localisation of existsByTitleAndAuthor(). Feels like BL, but simplicity for MVP to
   repository
   Decision: KISS atm, to repository for MVP
+- Learned too late about existing of JpaRepository, Repository, etc. family; when own version already
+  implemented and tested.
+  Decision: Solution similar enough, no rewrite of TaskRepository/TaskRepositoryInMemory. Schedule for future learning.
 
-Service
-=======
+## Service
 
 Nothing wild, just the business layer.
-TODO: get error handling clean of HTTP, Claude goofed there.
+decision: though Claude goofed (see error handling below), will keep as is for simplicity.
 
-Controller
-==========
+## Controller
 
 - Claude goofed, proposed class instead of record. Record way cleaner.
 - Learned that canonical constructors can be used for front line defense and/or setting
 default values of DTOs.
 
-Error handling / exceptions
-===========================
+## Error handling / exceptions
 
 In real production code, would have own global error handler with own exception classes.
 Decision: not for this toy project. Influences also: separation of concerns regarding throwing
 HTTP codes.
 
-Jakarta
-=======
+## Jakarta
 
 learned: annotations in Task.java do not enforce validation, only together
 with @Valid and/or @RequestBody (in the controller only?)
 
-Additional endpoints
-====================
+## Additional endpoints
 
 Just because I now can :-)
 DELETE: /tasks and /tasks/{id}
 GET: /tasks/count, /tasks/isempty, /tasks/populate
+Decision: will not implement update functionality / endpoints.
+
+## Logging
+
+Decision: will not implement a Logger. Seems simple enough, but too much for toy project.
