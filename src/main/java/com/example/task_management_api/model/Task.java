@@ -1,10 +1,7 @@
 package com.example.task_management_api.model;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.UUID;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 
 /**
@@ -32,8 +29,8 @@ public record Task(UUID id,
         String title, String author,
         String project, String status,
         String description,
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'") ZonedDateTime createdAt,
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'") ZonedDateTime updatedAt) {
+        Instant createdAt,
+        Instant updatedAt) {
 
     /*
      * Convenience constructor for creating a new Task with current timestamps in UTC.
@@ -44,16 +41,6 @@ public record Task(UUID id,
             String status,
             String description) {
         this(id, title, author, project, status, description,
-                LocalDateTime.now().atZone(ZoneId.systemDefault()).withZoneSameInstant(utcZoneId),
-                LocalDateTime.now().atZone(ZoneId.systemDefault()).withZoneSameInstant(utcZoneId));
+                Instant.now(), Instant.now());
     }
-
-
-    // ------------------------------------------------------------------------
-    // Private section from here on
-    // ------------------------------------------------------------------------
-
-    // static ZoneId for conversion of local date to UTC by convenience constructor
-    private static ZoneId utcZoneId = ZoneId.of("UTC");
-
 }
