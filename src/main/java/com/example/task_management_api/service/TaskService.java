@@ -215,7 +215,7 @@ public class TaskService {
                 "Design Database Scheme",
                 "Bob Smith",
                 "Database Design", // Missing in Challenge Instructions
-                "pending", // NOSONAR // no, I won't define a constant for that
+                "in-progress", // NOSONAR // no, I won't define a constant for that
                 "Draft the database schema for the project",
                 tCreated,
                 tUpdated);
