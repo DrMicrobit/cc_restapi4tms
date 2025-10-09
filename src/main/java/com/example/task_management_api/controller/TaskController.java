@@ -147,9 +147,19 @@ public class TaskController {
      *         of the task fails (e.g. status invalid or task duplicate already exists), a 400 (Bad
      *         Request) response is returned with error details.
      */
+    @Operation(summary = "Create a new task",
+            description = "Create a new task with the provided details.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Task created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid task data provided"),
+            @ApiResponse(responseCode = "409",
+                    description = "A task with same title and author already exists")
+    })
     @PostMapping
     public ResponseEntity<Task> createTask(
-            @Valid @RequestBody TaskCreateRequest request) {
+            @Parameter(description = "Task details for creation",
+                    required = true,
+                    example = "{\n  \"title\": \"Implement authentication\",\n  \"author\": \"John Doe\",\n  \"project\": \"Backend API\",\n  \"status\": \"pending\",\n  \"description\": \"Implement JWT authentication for the API\"\n}") @Valid @RequestBody TaskCreateRequest request) {
         Task createdTask = taskService.createTask(
                 request.title(),
                 request.author(),
