@@ -265,4 +265,32 @@ class TaskControllerIntegrationTest {
                 .content(duplicateRequest))
                 .andExpect(status().isConflict());
     }
+
+    @Test
+    void createTask_shouldReturnTimestampsInCorrectFormat() throws Exception {
+        String requestBody = """
+                {
+                    "title": "Test Task",
+                    "author": "Test Author",
+                    "project": "Test Project",
+                    "status": "pending",
+                    "description": "Testing timestamp format"
+                }
+                """;
+
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.createdAt")
+                        .value(matchesPattern("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z")))
+                .andExpect(jsonPath("$.updatedAt")
+                        .value(matchesPattern("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z")));
+    }
+
+
+    private static org.hamcrest.Matcher<String> matchesPattern(String regex) {
+        return org.hamcrest.text.MatchesPattern.matchesPattern(regex);
+    }
+
 }
