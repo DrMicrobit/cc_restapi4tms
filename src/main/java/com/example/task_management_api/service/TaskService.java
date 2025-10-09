@@ -136,7 +136,42 @@ public class TaskService {
     }
 
     // Update
-    // will not implement atm
+
+    /**
+     * Updates an existing task in repository. If no task with given ID exists, throws 404.
+     * 
+     * @param id the UUID of the task to update
+     * @param title the title of the task
+     * @param author the author of the task
+     * @param project the project the task belongs to
+     * @param status the status of the task, must be one of "pending", "in-progress", "completed"
+     * @param description the description of the task
+     * @return the updated task
+     * @throws ResponseStatusException with status 404 if no task with given ID exists
+     * @throws ResponseStatusException with status 400 if status is invalid
+     */
+    public Task updateTask(UUID id, String title, String author, String project, String status,
+            String description) {
+        // Check if task exists
+        var existingTask = taskRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Task not found. Id: " + id));
+
+        // Check for duplicate if title and author are changed
+        if (!existingTask.title().equals(title) || !existingTask.author().equals(author)) {
+            if (taskRepository.existsByTitleAndAuthor(title, author)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "A task with same title and author ('" + title + "', '" + author
+                                + "') already exists.");
+            }
+        }
+
+        // Update task with new values
+        var updatedTask = new Task(id, title, author, project, status, description,
+                existingTask.createdAt(), Instant.now());
+
+        return taskRepository.create(updatedTask);
+    }
 
     // Delete
 

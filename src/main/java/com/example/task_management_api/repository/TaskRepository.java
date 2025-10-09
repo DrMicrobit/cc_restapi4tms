@@ -36,7 +36,8 @@ public interface TaskRepository {
 
 
     // Update
-    // nothing atm
+
+    Task create(Task task);
 
     // Delete
     void clear();
