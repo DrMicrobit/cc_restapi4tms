@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.task_management_api.model.Task;
 import com.example.task_management_api.service.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -28,6 +33,7 @@ import jakarta.validation.constraints.Pattern;
 
 @RestController
 @RequestMapping("/tasks")
+@Tag(name = "Task Management", description = "Operations for managing tasks in the system")
 public class TaskController {
 
     /**
@@ -48,9 +54,17 @@ public class TaskController {
      * @return A ResponseEntity containing the list of tasks (filtered if status is provided).
      */
 
+    @Operation(summary = "Get all tasks",
+            description = "Retrieve a list of all tasks. Optionally filter by status.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved tasks"),
+            @ApiResponse(responseCode = "400", description = "Invalid status parameter provided")
+    })
     @GetMapping
     public ResponseEntity<List<Task>> getAllTasks(
-            @RequestParam(name = "status", required = false) String status) {
+            @Parameter(description = "Filter tasks by status (pending, in-progress, completed)",
+                    example = "pending") @RequestParam(name = "status",
+                            required = false) String status) {
         List<Task> tasks;
         if (status != null) {
             status = status.trim().toLowerCase();
@@ -71,9 +85,16 @@ public class TaskController {
      * @return A ResponseEntity containing the found task, or 404 if not found.
      */
 
+    @Operation(summary = "Get task by ID",
+            description = "Retrieve a specific task by its unique identifier.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved the task"),
+            @ApiResponse(responseCode = "404", description = "Task not found")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<Task> getTaskById(
-            @PathVariable UUID id) {
+            @Parameter(description = "The unique identifier of the task",
+                    example = "123e4567-e89b-12d3-a456-426614174000") @PathVariable UUID id) {
         var task = taskService.getTaskById(id);
         return ResponseEntity.ok(task);
     }
@@ -84,6 +105,10 @@ public class TaskController {
      * @return A ResponseEntity with appropriate status code (204)
      */
 
+    @Operation(summary = "Delete all tasks", description = "Delete all tasks from the system.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully deleted all tasks")
+    })
     @DeleteMapping
     public ResponseEntity<Void> deleteAllTasks() {
         taskService.deleteAllTasks();
@@ -98,8 +123,16 @@ public class TaskController {
      * @return A ResponseEntity with appropriate status code (204)
      */
 
+    @Operation(summary = "Delete task by ID",
+            description = "Delete a specific task by its unique identifier.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully deleted the task"),
+            @ApiResponse(responseCode = "404", description = "Task not found")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteTask(
+            @Parameter(description = "The unique identifier of the task to delete",
+                    example = "123e4567-e89b-12d3-a456-426614174000") @PathVariable UUID id) {
         taskService.deleteTaskById(id);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
@@ -133,7 +166,11 @@ public class TaskController {
      * 
      * @return A ResponseEntity containing a map with the task count.
      */
-
+    @Operation(summary = "Get task count",
+            description = "Retrieve the total number of tasks in the system.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved task count")
+    })
     @GetMapping("/count")
     public ResponseEntity<Map<String, Long>> getTaskCount() {
         long count = taskService.countTasks();
@@ -147,7 +184,12 @@ public class TaskController {
      * @return A ResponseEntity containing a map with a boolean indicating if the repository is
      *         empty.
      */
-
+    @Operation(summary = "Check if repository is empty",
+            description = "Check if the task repository is empty.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Successfully checked repository status")
+    })
     @GetMapping("/isempty")
     public ResponseEntity<Map<String, Boolean>> getIsEmpty() {
         boolean empty = taskService.isEmpty();
@@ -161,7 +203,13 @@ public class TaskController {
      * @return A ResponseEntity indicating that the tasks have been populated, with status 201
      *         (Created).
      */
-
+    @Operation(summary = "Populate with sample tasks",
+            description = "Populate the system with a predefined set of tasks for testing or demonstration purposes.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Successfully populated with sample tasks"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data")
+    })
     @GetMapping("/populate")
     public ResponseEntity<Map<String, Boolean>> populate() {
         taskService.createPredefinedTasks();
