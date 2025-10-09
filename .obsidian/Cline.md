@@ -17,7 +17,8 @@ Models , see also [Which local models actually work with Cline? AMD tested them 
 	- model from Ollama site probably Q4-1, maybe Q4_K_M, not Q4_0.
 	  Up to 48k context seems safe & usable. Spilling / OOM at 54/56
 	- See also [unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF at main](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF/tree/main) for smaller/larger
-	- Test [Intel/Qwen3-Coder-30B-A3B-Instruct-gguf-q2ks-mixed-AutoRound at main](https://huggingface.co/Intel/Qwen3-Coder-30B-A3B-Instruct-gguf-q2ks-mixed-AutoRound/tree/main) ?
+	- Test [Intel/Qwen3-Coder-30B-A3B-Instruct-gguf-q2ks-mixed-AutoRound at main](https://huggingface.co/Intel/Qwen3-Coder-30B-A3B-Instruct-gguf-q2ks-mixed-AutoRound/tree/main) 
+	  Can reliably work on 80k context. 88k maybe, but mem slowly filling up, could lead to OOM later.
 
 # Ollama integration
 
