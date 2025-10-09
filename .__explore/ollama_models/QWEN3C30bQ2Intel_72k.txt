@@ -1,5 +1,5 @@
 FROM hf.co/Intel/Qwen3-Coder-30B-A3B-Instruct-gguf-q2ks-mixed-AutoRound:Q2_K_S
-PARAMETER num_ctx 81920
+PARAMETER num_ctx 73728
 
 # Rest from original model file
 TEMPLATE {{ .Prompt }}
