@@ -18,6 +18,7 @@ import com.example.task_management_api.model.Task;
 import com.example.task_management_api.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -242,13 +243,15 @@ public class TaskController {
      */
 
     public record TaskCreateRequest(
-            @NotBlank(message = "Title is required") String title,
-            @NotBlank(message = "Author is required") String author,
-            @NotBlank(message = "Project is required") String project,
-            @NotBlank(message = "Status is required") @Pattern(
+            @Schema(example = "Implement authentication") @NotBlank(
+                    message = "Title is required") String title,
+            @Schema(example = "John Doe") @NotBlank(message = "Author is required") String author,
+            @Schema(example = "Backend API") @NotBlank(
+                    message = "Project is required") String project,
+            @Schema(example = "pending") @NotBlank(message = "Status is required") @Pattern(
                     regexp = "(?i)^(pending|in-progress|completed)$",
                     message = "Status must be 'pending', 'in-progress', or 'completed'.") String status,
-            String description) {
+            @Schema(example = "Implement JWT authentication for the API") String description) {
 
 
         /**
